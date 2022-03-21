@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.1.2 (76b9e6a115, 2022-02-25)"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="/home/nicolas/dev/pistou/frontend/assets/icon/icon.png"
+   inkscape:export-xdpi="96.000008"
+   inkscape:export-ydpi="96.000008"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="-158.59395"
+     inkscape:cy="-3.0304576"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:window-width="2193"
+     inkscape:window-height="1376"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:snap-intersection-paths="false"
+     inkscape:object-paths="false"
+     inkscape:snap-midpoints="true"
+     showguides="false"
+     inkscape:pagecheckerboard="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-99.158628,-91.711111)">
+    <rect
+       style="fill:#607d8b;fill-opacity:1;stroke:#008900;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect1582"
+       width="135.467"
+       height="135.46666"
+       x="99.158463"
+       y="91.711113"
+       rx="15.52"
+       inkscape:export-filename="/home/nicolas/dev/pistou/frontend/assets/icon/icon_foreground.png"
+       inkscape:export-xdpi="96.000008"
+       inkscape:export-ydpi="96.000008" />
+    <g
+       id="g9989"
+       transform="translate(0,0.02081833)"
+       inkscape:export-filename="/home/nicolas/dev/pistou/frontend/assets/icon/icon_foreground.png"
+       inkscape:export-xdpi="96.000008"
+       inkscape:export-ydpi="96.000008">
+      <path
+         id="path2615"
+         style="fill:none;stroke:#000000;stroke-width:7;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 225.83722,130.26366 -1e-5,85.57425 M 107.9467,103.21395 v 85.57425 0 m 0,0 40.01032,13.67319 31.92413,-10.44553 45.95606,23.82205 M 107.9467,103.21395 l 40.01033,13.67319 31.92413,-10.44553 45.95606,23.82205"
+         sodipodi:nodetypes="ccccccccccccc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:7;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:7, 14;stroke-dashoffset:0;stroke-opacity:1"
+         d="m 157.73285,146.9357 c 0,0 14.64548,-38.92617 52.07447,-4.76456 37.42899,34.16162 -89.14809,45.31 -89.14809,45.31"
+         id="path2901"
+         sodipodi:nodetypes="csc" />
+      <g
+         aria-label="X"
+         id="text6928"
+         style="font-size:10.5833px;line-height:1.25;stroke-width:3.21047;stroke-miterlimit:4;stroke-dasharray:none"
+         transform="matrix(1.8785947,-1.1192972,2.2199184,1.2079456,179.17573,-50.836726)">
+        <path
+           d="m -106.10591,71.179432 h 1.12137 l 1.91719,2.868033 1.92753,-2.868033 h 1.12137 l -2.48046,3.705189 2.645825,4.010078 h -1.121375 l -2.1704,-3.281443 -2.18591,3.281443 h -1.12654 l 2.75434,-4.118598 z"
+           id="path9782"
+           style="stroke-width:3.21047;stroke-miterlimit:4;stroke-dasharray:none" />
+      </g>
+    </g>
+  </g>
+</svg>
