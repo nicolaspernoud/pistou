@@ -42,9 +42,16 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(tr(context, "settings")),
-        ),
+        appBar: AppBar(title: Text(tr(context, "settings")), actions: [
+          IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () async {
+                await widget.usersCrud.read();
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(tr(context, "users_refreshed"))));
+              })
+        ]),
         body: Center(
             child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -95,7 +102,8 @@ class _SettingsState extends State<Settings> {
                                         ListTile(
                                           leading: const Icon(Icons.person),
                                           title: Text(a.name),
-                                          subtitle: Text(a.password),
+                                          subtitle: Text(
+                                              "${tr(context, "current_step")} : ${a.currentStep}"),
                                         ),
                                       ],
                                     ),
