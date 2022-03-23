@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart' hide Step;
 import 'package:pistou/models/advance_crud.dart';
 import 'package:pistou/models/answer.dart';
 import 'package:pistou/models/step.dart';
 import 'package:pistou/models/crud.dart';
 import 'package:pistou/models/user.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:pistou/globals.dart';
 import '../i18n.dart';
@@ -29,6 +29,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Future<Step>? _step;
+  bool _hasSound = false;
+  AudioPlayer audioPlayer = AudioPlayer();
   Answer answer = Answer(
       password: App().prefs.userPassword,
       latitude: 0.0,
@@ -47,35 +49,35 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     if (App().hasUser) {
-      _getCurrentStep();
+      _getCurrentStep(false);
     } else {
       WidgetsBinding.instance?.addPostFrameCallback(openSettings);
     }
   }
 
-  Future<void> _getCurrentStep() async {
-    var stepAndOutcome = await widget.advanceCrud.getCurrentStep(context);
+  Future<void> _getCurrentStep(bool advance) async {
+    var stepAndOutcome = advance
+        ? await widget.advanceCrud.advance(context, answer)
+        : await widget.advanceCrud.getCurrentStep(context);
     var s = stepAndOutcome.step;
     if (s != null) {
       setState(() {
-        _step = Future.value(s);
-      });
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(stepAndOutcome.outcome),
-      ),
-    );
-  }
-
-  Future<void> _advance() async {
-    var stepAndOutcome = await widget.advanceCrud.advance(context, answer);
-    var s = stepAndOutcome.step;
-    if (s != null) {
-      setState(() {
-        _step = Future.value(s);
         _answerController.text = "";
+        _step = Future.value(s);
+        audioPlayer.stop();
+        _hasSound = false;
       });
+      String url =
+          '${App().prefs.hostname}/api/common/steps/sounds/${s.id.toString()}';
+      try {
+        await audioPlayer.setUrl(url);
+        setState(() {
+          _hasSound = true;
+          audioPlayer.play();
+        });
+      } catch (e) {
+        _hasSound = false;
+      }
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -118,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void hasUserOrOpenSettings(_) {
     if (App().hasUser) {
-      _getCurrentStep();
+      _getCurrentStep(false);
     } else {
       openSettings(_);
     }
@@ -165,8 +167,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: FutureBuilder<Step?>(
                   future: _step,
                   builder: (context, snapshot) {
+                    Widget child;
                     if (snapshot.hasData) {
-                      return SingleChildScrollView(
+                      child = SingleChildScrollView(
+                        key: ValueKey(snapshot.data!.id),
                         child: Column(
                           children: [
                             const Icon(Icons.not_listed_location, size: 40),
@@ -183,31 +187,27 @@ class _MyHomePageState extends State<MyHomePage> {
                             Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
-                                child: FutureBuilder<http.Response?>(
-                                  future: http.get(Uri.parse(
-                                      '${App().prefs.hostname}/api/common/steps/images/${snapshot.data!.id.toString()}')),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData &&
-                                        snapshot.data!.statusCode == 200 &&
-                                        snapshot.data != null) {
-                                      return Container(
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 500,
-                                        ),
-                                        child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                            child: Image.memory(
-                                              snapshot.data!.bodyBytes,
-                                              fit: BoxFit.contain,
-                                            )),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    child: Image.network(
+                                      '${App().prefs.hostname}/api/common/steps/images/${snapshot.data!.id.toString()}',
+                                      errorBuilder: (BuildContext context,
+                                          Object exception,
+                                          StackTrace? stackTrace) {
+                                        return const Text('-');
+                                      },
+                                      fit: BoxFit.contain,
+                                    )),
                               ),
                             ),
+                            if (_hasSound)
+                              IconButton(
+                                  onPressed: () {
+                                    play();
+                                  },
+                                  icon: audioPlayer.playing
+                                      ? const Icon(Icons.stop)
+                                      : const Icon(Icons.play_arrow)),
                             if (!snapshot.data!.isEnd) ...[
                               Center(
                                 child: Padding(
@@ -236,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 padding: const EdgeInsets.all(16.0),
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    _advance();
+                                    _getCurrentStep(true);
                                   },
                                   child: Row(
                                     children: [
@@ -258,13 +258,37 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       );
                     } else if (snapshot.hasError) {
-                      return Text('${snapshot.error}');
+                      child = Text('${snapshot.error}');
+                    } else {
+                      child = const Center(child: CircularProgressIndicator());
                     }
-                    // By default, show a loading spinner.
-                    return const Center(child: CircularProgressIndicator());
+                    return AnimatedSwitcher(
+                      switchInCurve: const Interval(
+                        0.5,
+                        1,
+                        curve: Curves.linear,
+                      ),
+                      switchOutCurve: const Interval(
+                        0,
+                        0.5,
+                        curve: Curves.linear,
+                      ).flipped,
+                      duration: const Duration(seconds: 1),
+                      child: child,
+                    );
                   },
                 ),
               ))
             : null);
+  }
+
+  play() async {
+    setState(() {
+      if (audioPlayer.playing) {
+        audioPlayer.stop();
+      } else {
+        audioPlayer.play();
+      }
+    });
   }
 }

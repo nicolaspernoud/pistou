@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Step;
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:pistou/globals.dart';
 import 'package:pistou/models/crud.dart';
 import 'package:pistou/models/new_position.dart';
@@ -35,6 +37,9 @@ class _NewEditStepState extends State<NewEditStep>
   late bool isExisting;
   Future<Uint8List?>? imageBytes;
   bool submitting = false;
+  AudioPlayer audioPlayer = AudioPlayer();
+  bool _hasSound = false;
+  Uint8List? soundBytes = Uint8List(0);
 
   TextEditingController? _latitudeController;
   TextEditingController? _longitudeController;
@@ -46,6 +51,7 @@ class _NewEditStepState extends State<NewEditStep>
     mapController = MapController();
     if (widget.step.id > 0) {
       _imgFromServer(widget.step.id);
+      _soundFromServer(widget.step.id);
     }
   }
 
@@ -78,11 +84,9 @@ class _NewEditStepState extends State<NewEditStep>
     controller.forward();
   }
 
-  _imgFromCamera() async {
+  _imgFrom(ImageSource source) async {
     final temp = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        imageQuality: JPG_IMAGE_QUALITY,
-        maxWidth: 1280);
+        source: source, imageQuality: JPG_IMAGE_QUALITY, maxWidth: 1280);
     if (temp != null) {
       setState(() {
         imageBytes = temp.readAsBytes();
@@ -120,7 +124,7 @@ class _NewEditStepState extends State<NewEditStep>
         Uri.parse(
             '${App().prefs.hostname}/api/admin/steps/images/${id.toString()}'),
         headers: <String, String>{
-          'Authorization': "Bearer " + App().prefs.hostname
+          'Authorization': "Bearer " + App().prefs.token
         },
       );
     }
@@ -136,6 +140,58 @@ class _NewEditStepState extends State<NewEditStep>
       setState(() {
         imageBytes = Future.value(response.bodyBytes);
       });
+    }
+  }
+
+  _soundFrom() async {
+    FilePickerResult? audioFile =
+        await FilePicker.platform.pickFiles(withData: true);
+    if (audioFile != null) {
+      soundBytes = audioFile.files.first.bytes!;
+      setState(() {
+        var source = BufferAudioSource(soundBytes!);
+        audioPlayer.setAudioSource(source);
+        _hasSound = true;
+      });
+    }
+  }
+
+  _soundFromServer(int id) async {
+    final response = await http.get(
+      Uri.parse(
+          '${App().prefs.hostname}/api/common/steps/sounds/${id.toString()}'),
+      headers: <String, String>{'Authorization': "Bearer " + App().prefs.token},
+    );
+    if (response.statusCode == 200) {
+      soundBytes = response.bodyBytes;
+      setState(() {
+        var source = BufferAudioSource(soundBytes!);
+        audioPlayer.setAudioSource(source);
+        _hasSound = true;
+      });
+    }
+  }
+
+  Future<void> _soundToServer(int id) async {
+    if (soundBytes != null) {
+      final response = await http.post(
+          Uri.parse(
+              '${App().prefs.hostname}/api/admin/steps/sounds/${id.toString()}'),
+          headers: <String, String>{
+            'Authorization': "Bearer " + App().prefs.token
+          },
+          body: soundBytes);
+      if (response.statusCode != 200) {
+        throw Exception(response.body.toString());
+      }
+    } else {
+      http.delete(
+        Uri.parse(
+            '${App().prefs.hostname}/api/admin/steps/sounds/${id.toString()}'),
+        headers: <String, String>{
+          'Authorization': "Bearer " + App().prefs.token
+        },
+      );
     }
   }
 
@@ -342,7 +398,13 @@ class _NewEditStepState extends State<NewEditStep>
                     ],
                   ),
                   const Center(
-                    child: Text("Image"),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Image",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                   Center(
                     child: Padding(
@@ -356,7 +418,7 @@ class _NewEditStepState extends State<NewEditStep>
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    _imgFromCamera();
+                                    _imgFrom(ImageSource.camera);
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0),
@@ -376,8 +438,9 @@ class _NewEditStepState extends State<NewEditStep>
                                 ),
                                 IconButton(
                                     onPressed: () {
-                                      imageBytes = Future.value(null);
-                                      setState(() {});
+                                      setState(() {
+                                        imageBytes = Future.value(null);
+                                      });
                                     },
                                     icon: const Icon(Icons.clear))
                               ],
@@ -385,15 +448,66 @@ class _NewEditStepState extends State<NewEditStep>
                           } else if (snapshot.hasError) {
                             return Text('${snapshot.error}');
                           }
-                          return IconButton(
-                              onPressed: () {
-                                _imgFromCamera();
-                              },
-                              icon: const Icon(Icons.camera_alt));
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                  onPressed: () {
+                                    _imgFrom(ImageSource.camera);
+                                  },
+                                  icon: const Icon(Icons.camera_alt)),
+                              IconButton(
+                                  onPressed: () {
+                                    _imgFrom(ImageSource.gallery);
+                                  },
+                                  icon: const Icon(Icons.upload_file)),
+                            ],
+                          );
                         },
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        tr(context, "sound"),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    if (_hasSound)
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              if (audioPlayer.playing) {
+                                audioPlayer.stop();
+                              } else {
+                                audioPlayer.play();
+                              }
+                            });
+                          },
+                          icon: audioPlayer.playing
+                              ? const Icon(Icons.stop)
+                              : const Icon(Icons.play_arrow)),
+                    IconButton(
+                        onPressed: () {
+                          _soundFrom();
+                        },
+                        icon: const Icon(Icons.upload_file)),
+                    if (_hasSound)
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              audioPlayer.stop();
+                              soundBytes = null;
+                              _hasSound = false;
+                            });
+                          },
+                          icon: const Icon(Icons.clear))
+                  ]),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: SizedBox(
@@ -425,10 +539,12 @@ class _NewEditStepState extends State<NewEditStep>
                                         if (widget.step.id > 0) {
                                           await widget.crud.update(widget.step);
                                           await _imgToServer(widget.step.id);
+                                          await _soundToServer(widget.step.id);
                                         } else {
                                           var t = await widget.crud
                                               .create(widget.step);
                                           await _imgToServer(t.id);
+                                          await _soundToServer(t.id);
                                         }
                                         // Do nothing on TypeError as Create respond with a null id
                                       } catch (e) {
@@ -474,4 +590,27 @@ class _NewEditStepState extends State<NewEditStep>
 
 String emptyIfZero(num value) {
   return value == 0.0 ? "" : value.toString();
+}
+
+class BufferAudioSource extends StreamAudioSource {
+  final Uint8List _buffer;
+
+  BufferAudioSource(this._buffer) : super();
+
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) {
+    start = start ?? 0;
+    end = end ?? _buffer.length;
+
+    return Future.value(
+      StreamAudioResponse(
+        sourceLength: _buffer.length,
+        contentLength: end - start,
+        offset: start,
+        contentType: 'audio/mpeg',
+        stream:
+            Stream.value(List<int>.from(_buffer.skip(start).take(end - start))),
+      ),
+    );
+  }
 }

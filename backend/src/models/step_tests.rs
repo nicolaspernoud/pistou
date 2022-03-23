@@ -219,7 +219,7 @@ pub async fn step_test(
         "{\"id\""
     );
 
-    // Upload a photo for this step
+    // Upload a image for this step
     let img_body = std::fs::read("test_img.jpg").unwrap();
     let req = test::TestRequest::with_uri(format!("/api/admin/steps/images/{}", id).as_str())
         .method(Method::POST)
@@ -229,8 +229,28 @@ pub async fn step_test(
     let resp = test::call_service(&mut app, req).await;
     assert_eq!(resp.status(), StatusCode::OK);
 
-    // Retrieve the photo
+    // Retrieve the image
     let req = test::TestRequest::with_uri(format!("/api/common/steps/images/{}", id).as_str())
+        .method(Method::GET)
+        .insert_header(("Authorization", "Bearer 0101"))
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body = test::read_body(resp).await;
+    assert_eq!(body, img_body);
+
+    // Upload a sound for this step (we use the same image file, as we only want to test the upload, retrieving, and deletion)
+    let img_body = std::fs::read("test_img.jpg").unwrap();
+    let req = test::TestRequest::with_uri(format!("/api/admin/steps/sounds/{}", id).as_str())
+        .method(Method::POST)
+        .insert_header(("Authorization", "Bearer 0101"))
+        .set_payload(img_body.clone())
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+
+    // Retrieve the sound
+    let req = test::TestRequest::with_uri(format!("/api/common/steps/sounds/{}", id).as_str())
         .method(Method::GET)
         .insert_header(("Authorization", "Bearer 0101"))
         .to_request();
@@ -250,8 +270,16 @@ pub async fn step_test(
         format!("Deleted object with id: {}", id)
     );
 
-    // Check that the photo is gone too
+    // Check that the image is gone too
     let req = test::TestRequest::with_uri(format!("/api/common/steps/images/{}", id).as_str())
+        .method(Method::GET)
+        .insert_header(("Authorization", "Bearer 0101"))
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+
+    // Check that the sound is gone too
+    let req = test::TestRequest::with_uri(format!("/api/common/steps/sounds/{}", id).as_str())
         .method(Method::GET)
         .insert_header(("Authorization", "Bearer 0101"))
         .to_request();

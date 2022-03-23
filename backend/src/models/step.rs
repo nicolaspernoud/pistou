@@ -3,7 +3,10 @@ use actix_files::NamedFile;
 use actix_web::Result;
 use futures_util::StreamExt;
 use image::GenericImageView;
-use std::fs::{self};
+use std::{
+    fs::{create_dir_all, remove_file, File},
+    io::Write,
+};
 
 use image::imageops::FilterType::Lanczos3;
 use serde::{Deserialize, Serialize};
@@ -127,7 +130,8 @@ pub async fn delete(
         }
     })
     .await??;
-    let _ = web::block(move || fs::remove_file(photo_filename(oid))).await;
+    let _ = web::block(move || remove_file(image_filename(oid))).await;
+    let _ = web::block(move || remove_file(sound_filename(oid))).await;
     Ok(HttpResponse::Ok().body(format!("Deleted object with id: {}", oid)))
 }
 
@@ -167,8 +171,8 @@ async fn upload_image(
     oid: web::Path<i32>,
     mut body: web::Payload,
 ) -> Result<HttpResponse, ServerError> {
-    fs::create_dir_all(IMAGES_PATH)?;
-    let filename = photo_filename(*oid);
+    create_dir_all(IMAGES_PATH)?;
+    let filename = image_filename(*oid);
     let mut bytes = web::BytesMut::new();
     while let Some(item) = body.next().await {
         bytes.extend_from_slice(&item?);
@@ -187,19 +191,19 @@ async fn upload_image(
         )?;
         Ok(HttpResponse::Ok().body(filename))
     } else {
-        let res = HttpResponse::InternalServerError().body("Error loading image");
+        let res = HttpResponse::InternalServerError().body("Error uploading image");
         Ok(res)
     }
 }
 
 #[get("/images/{oid}")]
 async fn retrieve_image(oid: web::Path<i32>) -> Result<NamedFile> {
-    Ok(NamedFile::open(photo_filename(*oid))?)
+    Ok(NamedFile::open(image_filename(*oid))?)
 }
 
 #[delete("/images/{oid}")]
 async fn delete_image(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
-    let d = web::block(move || fs::remove_file(photo_filename(*oid))).await?;
+    let d = web::block(move || remove_file(image_filename(*oid))).await?;
     if let Ok(_) = d {
         Ok(HttpResponse::Ok().body("File deleted"))
     } else {
@@ -208,6 +212,46 @@ async fn delete_image(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> 
     }
 }
 
-fn photo_filename(id: i32) -> String {
+fn image_filename(id: i32) -> String {
     format!("{path}/{id}.jpg", path = IMAGES_PATH, id = id)
+}
+
+///////////////////////
+// SOUNDS MANAGEMENT //
+///////////////////////
+
+const SOUNDS_PATH: &str = "data/items/sounds";
+
+#[post("/sounds/{oid}")]
+async fn upload_sound(
+    oid: web::Path<i32>,
+    mut body: web::Payload,
+) -> Result<HttpResponse, ServerError> {
+    create_dir_all(SOUNDS_PATH)?;
+    let filename = sound_filename(*oid);
+    let mut file = File::create(&filename)?;
+    while let Some(item) = body.next().await {
+        file.write(&item?)?;
+    }
+    Ok(HttpResponse::Ok().body(filename))
+}
+
+#[get("/sounds/{oid}")]
+async fn retrieve_sound(oid: web::Path<i32>) -> Result<NamedFile> {
+    Ok(NamedFile::open(sound_filename(*oid))?)
+}
+
+#[delete("/sounds/{oid}")]
+async fn delete_sound(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
+    let d = web::block(move || remove_file(sound_filename(*oid))).await?;
+    if let Ok(_) = d {
+        Ok(HttpResponse::Ok().body("File deleted"))
+    } else {
+        let res = HttpResponse::NotFound().body("File not found");
+        Ok(res)
+    }
+}
+
+fn sound_filename(id: i32) -> String {
+    format!("{path}/{id}.mp3", path = SOUNDS_PATH, id = id)
 }

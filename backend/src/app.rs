@@ -68,7 +68,8 @@ macro_rules! create_app {
             .service(
                 web::scope("/api/common/steps")
                     .service(step::read)
-                    .service(step::retrieve_image),
+                    .service(step::retrieve_image)
+                    .service(step::retrieve_sound),
             )
             .service(
                 web::scope("/api/admin/steps")
@@ -79,6 +80,8 @@ macro_rules! create_app {
                     .service(step::delete)
                     .service(step::upload_image)
                     .service(step::delete_image)
+                    .service(step::upload_sound)
+                    .service(step::delete_sound)
                     .wrap(HttpAuthentication::bearer(crate::app::validator)),
             )
             .service(actix_files::Files::new("/", "./web").index_file("index.html"))
