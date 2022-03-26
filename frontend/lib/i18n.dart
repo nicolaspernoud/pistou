@@ -20,6 +20,7 @@ class MyLocalizations {
     'en': {
       "answer": "Answer",
       "bad_response_code": "Bad server response code",
+      "confirm_your_id": "Please confirm your identity...",
       "current_step": "Current step",
       "edit_step": "Edit step",
       "edit_user": "Edit user",
@@ -61,6 +62,7 @@ class MyLocalizations {
     'fr': {
       "answer": "Réponse",
       "bad_response_code": "Mauvais code de réponse serveur",
+      "confirm_your_id": "Veuillez confirmer votre identité...",
       "current_step": "Étape en cours",
       "edit_step": "Éditer étape",
       "edit_user": "Éditer utilisateur",

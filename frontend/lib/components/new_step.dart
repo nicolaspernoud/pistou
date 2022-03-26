@@ -14,8 +14,15 @@ import 'package:image/image.dart' as image;
 import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:math';
 
 import '../i18n.dart';
+
+enum SoundStatus {
+  none,
+  available,
+  loading,
+}
 
 class NewEditStep extends StatefulWidget {
   final Crud crud;
@@ -36,10 +43,11 @@ class _NewEditStepState extends State<NewEditStep>
   final _formKey = GlobalKey<FormState>();
   late bool isExisting;
   Future<Uint8List?>? imageBytes;
-  bool submitting = false;
+  bool _submitting = false;
   AudioPlayer audioPlayer = AudioPlayer();
-  bool _hasSound = false;
+  SoundStatus _soundStatus = SoundStatus.none;
   Uint8List? soundBytes = Uint8List(0);
+  final int _randomId = 100000 + Random().nextInt(100000);
 
   TextEditingController? _latitudeController;
   TextEditingController? _longitudeController;
@@ -51,7 +59,27 @@ class _NewEditStepState extends State<NewEditStep>
     mapController = MapController();
     if (widget.step.id > 0) {
       _imgFromServer(widget.step.id);
-      _soundFromServer(widget.step.id);
+      _setPlayerUrl(widget.step.id);
+    }
+  }
+
+  Future<void> _setPlayerUrl(int id) async {
+    // Dummy loading to force cache flush
+    try {
+      await audioPlayer.setUrl(
+          '${App().prefs.hostname}/api/common/steps/sounds/dummy',
+          preload: false);
+    } on Exception catch (_) {}
+    try {
+      await audioPlayer.setUrl(
+          '${App().prefs.hostname}/api/common/steps/sounds/${id.toString()}');
+      setState(() {
+        _soundStatus = SoundStatus.available;
+      });
+    } catch (e) {
+      setState(() {
+        _soundStatus = SoundStatus.none;
+      });
     }
   }
 
@@ -144,30 +172,20 @@ class _NewEditStepState extends State<NewEditStep>
   }
 
   _soundFrom() async {
+    var tmpStatus = _soundStatus;
+    setState(() {
+      _soundStatus = SoundStatus.loading;
+    });
     FilePickerResult? audioFile =
         await FilePicker.platform.pickFiles(withData: true);
     if (audioFile != null) {
       soundBytes = audioFile.files.first.bytes!;
+      var id = widget.step.id > 0 ? widget.step.id : _randomId;
+      await _soundToServer(id);
+      _setPlayerUrl(id);
+    } else {
       setState(() {
-        var source = BufferAudioSource(soundBytes!);
-        audioPlayer.setAudioSource(source);
-        _hasSound = true;
-      });
-    }
-  }
-
-  _soundFromServer(int id) async {
-    final response = await http.get(
-      Uri.parse(
-          '${App().prefs.hostname}/api/common/steps/sounds/${id.toString()}'),
-      headers: <String, String>{'Authorization': "Bearer " + App().prefs.token},
-    );
-    if (response.statusCode == 200) {
-      soundBytes = response.bodyBytes;
-      setState(() {
-        var source = BufferAudioSource(soundBytes!);
-        audioPlayer.setAudioSource(source);
-        _hasSound = true;
+        _soundStatus = tmpStatus;
       });
     }
   }
@@ -199,6 +217,7 @@ class _NewEditStepState extends State<NewEditStep>
   void dispose() {
     _latitudeController?.dispose();
     _longitudeController?.dispose();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -477,37 +496,47 @@ class _NewEditStepState extends State<NewEditStep>
                       ),
                     ),
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    if (_hasSound)
-                      IconButton(
-                          onPressed: () {
-                            setState(() {
-                              if (audioPlayer.playing) {
-                                audioPlayer.stop();
-                              } else {
-                                audioPlayer.play();
-                              }
-                            });
-                          },
-                          icon: audioPlayer.playing
-                              ? const Icon(Icons.stop)
-                              : const Icon(Icons.play_arrow)),
-                    IconButton(
-                        onPressed: () {
-                          _soundFrom();
-                        },
-                        icon: const Icon(Icons.upload_file)),
-                    if (_hasSound)
-                      IconButton(
-                          onPressed: () {
-                            setState(() {
-                              audioPlayer.stop();
-                              soundBytes = null;
-                              _hasSound = false;
-                            });
-                          },
-                          icon: const Icon(Icons.clear))
-                  ]),
+                  _soundStatus == SoundStatus.loading
+                      ? const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_soundStatus == SoundStatus.available)
+                                  IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          if (audioPlayer.playing) {
+                                            audioPlayer.stop();
+                                          } else {
+                                            audioPlayer.play();
+                                          }
+                                        });
+                                      },
+                                      icon: audioPlayer.playing
+                                          ? const Icon(Icons.stop)
+                                          : const Icon(Icons.play_arrow)),
+                                IconButton(
+                                    onPressed: () {
+                                      _soundFrom();
+                                    },
+                                    icon: const Icon(Icons.upload_file)),
+                                if (_soundStatus == SoundStatus.available)
+                                  IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          audioPlayer.stop();
+                                          soundBytes = null;
+                                          _soundStatus = SoundStatus.none;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.clear))
+                              ]),
+                        ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: SizedBox(
@@ -526,13 +555,13 @@ class _NewEditStepState extends State<NewEditStep>
                             curve: Curves.linear,
                           ).flipped,
                           duration: const Duration(milliseconds: 500),
-                          child: !submitting
+                          child: !_submitting
                               ? ElevatedButton(
                                   onPressed: () async {
                                     // Validate returns true if the form is valid, or false otherwise.
                                     if (_formKey.currentState!.validate()) {
                                       setState(() {
-                                        submitting = true;
+                                        _submitting = true;
                                       });
                                       var msg = tr(context, "step_created");
                                       try {
@@ -545,6 +574,13 @@ class _NewEditStepState extends State<NewEditStep>
                                               .create(widget.step);
                                           await _imgToServer(t.id);
                                           await _soundToServer(t.id);
+                                          await http.delete(
+                                              Uri.parse(
+                                                  '${App().prefs.hostname}/api/admin/steps/sounds/${_randomId.toString()}'),
+                                              headers: <String, String>{
+                                                'Authorization': "Bearer " +
+                                                    App().prefs.token
+                                              });
                                         }
                                         // Do nothing on TypeError as Create respond with a null id
                                       } catch (e) {
@@ -590,27 +626,4 @@ class _NewEditStepState extends State<NewEditStep>
 
 String emptyIfZero(num value) {
   return value == 0.0 ? "" : value.toString();
-}
-
-class BufferAudioSource extends StreamAudioSource {
-  final Uint8List _buffer;
-
-  BufferAudioSource(this._buffer) : super();
-
-  @override
-  Future<StreamAudioResponse> request([int? start, int? end]) {
-    start = start ?? 0;
-    end = end ?? _buffer.length;
-
-    return Future.value(
-      StreamAudioResponse(
-        sourceLength: _buffer.length,
-        contentLength: end - start,
-        offset: start,
-        contentType: 'audio/mpeg',
-        stream:
-            Stream.value(List<int>.from(_buffer.skip(start).take(end - start))),
-      ),
-    );
-  }
 }

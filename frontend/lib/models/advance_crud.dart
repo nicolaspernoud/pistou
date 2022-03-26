@@ -40,7 +40,7 @@ class AdvanceCrud {
             outcome: tr(context, "starting_game"));
       }
       return AdvanceCrudResponse(
-          step: null, outcome: tr(context, "no_more_steps"));
+          step: null, outcome: tr(context, "confirm_your_id"));
     } on Exception catch (e) {
       return AdvanceCrudResponse(step: null, outcome: e.toString());
     }

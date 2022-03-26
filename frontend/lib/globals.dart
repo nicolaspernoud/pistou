@@ -21,6 +21,10 @@ class App {
     return prefs.userId > 0;
   }
 
+  removeUser() {
+    prefs.userId = 0;
+  }
+
   log(String v) async {
     await prefs.addToLog(v);
   }

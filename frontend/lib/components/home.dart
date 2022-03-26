@@ -78,6 +78,12 @@ class _MyHomePageState extends State<MyHomePage> {
       } catch (e) {
         _hasSound = false;
       }
+    } else {
+      // Case of unrecognized user
+      if (!advance) {
+        App().removeUser();
+        WidgetsBinding.instance?.addPostFrameCallback(openSettings);
+      }
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -149,6 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
             IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () async {
+                  audioPlayer.stop();
                   await Navigator.push(context,
                       MaterialPageRoute<void>(builder: (BuildContext context) {
                     return Settings(
