@@ -4,6 +4,7 @@ use actix_web::Result;
 use futures_util::StreamExt;
 use image::GenericImageView;
 use std::{
+    cmp::Ordering,
     fs::{create_dir_all, remove_file, File},
     io::Write,
 };
@@ -54,12 +55,28 @@ pub struct Step {
 
 fn rerank(
     conn: &r2d2::PooledConnection<ConnectionManager<SqliteConnection>>,
+    priority_id: Option<(i32, Ordering)>,
 ) -> Result<(), diesel::result::Error> {
     use crate::schema::steps::dsl::*;
     let mut i = 0;
     // get the steps
-    let steps_vec = steps.order(rank.asc()).load::<Step>(conn)?;
-
+    let mut steps_vec = steps.order(rank.asc()).load::<Step>(conn)?;
+    // if there is a force rank step, make sure that is before the step with the same rank
+    if let Some((pid, order)) = priority_id {
+        steps_vec.sort_by(|a, b| {
+            if a.rank < b.rank {
+                Ordering::Less
+            } else if a.rank == b.rank {
+                if a.id == pid {
+                    order
+                } else {
+                    order.reverse()
+                }
+            } else {
+                Ordering::Greater
+            }
+        });
+    }
     for v in steps_vec {
         i = i + 1;
         // alter the steps
@@ -106,7 +123,7 @@ pub async fn create(
         o.trim();
         diesel::insert_into(steps).values(&*o).execute(&conn)?;
         // Renumber the steps
-        rerank(&conn)?;
+        rerank(&conn, None)?;
         steps.order(id.desc()).first::<Step>(&conn)
     })
     .await??;
@@ -123,7 +140,7 @@ pub async fn delete(
     web::block(move || {
         use crate::schema::steps::dsl::*;
         let deleted = diesel::delete(steps).filter(id.eq(oid)).execute(&conn)?;
-        rerank(&conn)?;
+        rerank(&conn, None)?;
         match deleted {
             0 => Err(diesel::result::Error::NotFound),
             _ => Ok(deleted),
@@ -145,11 +162,19 @@ pub async fn update(
     o.trim();
     let put_o = web::block(move || {
         use crate::schema::steps::dsl::*;
+        // Get the initial rank to work out the ordering of the
+        let initial_rank = steps.filter(id.eq(*oid)).first::<Step>(&conn)?.rank;
+        let ordering = if o.rank > initial_rank {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        };
+
         diesel::update(steps)
             .filter(id.eq(*oid))
             .set(&*o)
             .execute(&conn)?;
-        rerank(&conn)?;
+        rerank(&conn, Some((*oid, ordering)))?;
         steps.filter(id.eq(*oid)).first::<Step>(&conn)
     })
     .await??;

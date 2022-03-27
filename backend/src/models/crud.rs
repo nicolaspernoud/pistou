@@ -58,7 +58,6 @@ macro_rules! crud_create {
                     crate::schema::$parent_table::dsl::$parent_table.find(o.$parent_table_id).first::<$parent_model>(&conn)?;
                 )*
                 use crate::schema::$table::dsl::*;
-                // We map the error to a diesel error because the compiler expects it, TODO : see if it is needed in future Rust releases
                 o.trim()?;
                 diesel::insert_into($table)
                     .values(&*o)

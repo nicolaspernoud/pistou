@@ -193,6 +193,36 @@ pub async fn step_test(
         )
     );
 
+    // Alter the id1 step and make sure that is has been reranked to first
+    do_test!(
+        app,
+        "0101",
+        Method::PUT,
+        &format!("/api/admin/steps/{}", id1),
+        &format!(
+            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+        ),
+        StatusCode::OK,
+        format!(
+            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+        )
+    );
+
+    // Alter the id3 step and make sure that is has been reranked to first
+    do_test!(
+        app,
+        "0101",
+        Method::PUT,
+        &format!("/api/admin/steps/{}", id3),
+        &format!(
+            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}"#
+        ),
+        StatusCode::OK,
+        format!(
+            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}"#
+        )
+    );
+
     // Delete all the steps
     do_test!(
         app,

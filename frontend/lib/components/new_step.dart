@@ -227,386 +227,395 @@ class _NewEditStepState extends State<NewEditStep>
         TextEditingController(text: emptyIfZero(widget.step.latitude));
     _longitudeController ??=
         TextEditingController(text: emptyIfZero(widget.step.longitude));
-    return Scaffold(
-      appBar: AppBar(
-        title: widget.step.id > 0
-            ? Text(tr(context, "edit_step"))
-            : Text(tr(context, "new_step")),
-        actions: widget.step.id > 0
-            ? [
-                IconButton(
-                    icon: const Icon(Icons.delete_forever),
-                    onPressed: () async {
-                      await widget.crud.delete(widget.step.id);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr(context, "step_deleted"))));
-                    })
-              ]
-            : null,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(labelText: tr(context, "rank")),
-                    initialValue: widget.step.rank.toString(),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly
-                    ],
-                    onChanged: (value) {
-                      var v = int.tryParse(value);
-                      if (v != null) {
-                        widget.step.rank = v;
-                      }
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: widget.step.locationHint,
-                    decoration: InputDecoration(
-                        labelText: tr(context, "location_hint")),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return tr(context, "please_enter_some_text");
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      widget.step.locationHint = value;
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: widget.step.question,
-                    decoration:
-                        InputDecoration(labelText: tr(context, "question")),
-                    // The validator receives the text that the step has entered.
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return tr(context, "please_enter_some_text");
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      widget.step.question = value;
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: widget.step.answer,
-                    decoration:
-                        InputDecoration(labelText: tr(context, "answer")),
-                    // The validator receives the text that the step has entered.
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return tr(context, "please_enter_some_text");
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      widget.step.answer = value;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _latitudeController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                        labelText: tr(context, "latitude"),
-                        suffixIcon: IconButton(
-                            icon: const Icon(Icons.my_location),
-                            onPressed: () async {
-                              var pos = await getPosition();
-                              _updateMap(pos!.latitude, pos.longitude, true);
-                            })),
-                    // The validator receives the text that the step has entered.
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(doubleOnly)
-                    ],
-                    onChanged: (text) {
-                      var value = double.tryParse(text);
-                      if (value != null) {
-                        widget.step.latitude = value;
-                        _updateMap(
-                            widget.step.latitude, widget.step.longitude, false);
-                      } else {
-                        widget.step.latitude = 0;
-                      }
-                    },
-                  ),
-                  TextFormField(
-                    controller: _longitudeController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: tr(context, "longitude"),
+    return WillPopScope(
+      onWillPop: () async {
+        await _deleteTemporarySound();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: widget.step.id > 0
+              ? Text(tr(context, "edit_step"))
+              : Text(tr(context, "new_step")),
+          actions: widget.step.id > 0
+              ? [
+                  IconButton(
+                      icon: const Icon(Icons.delete_forever),
+                      onPressed: () async {
+                        await widget.crud.delete(widget.step.id);
+                        await _deleteTemporarySound();
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(tr(context, "step_deleted"))));
+                      })
+                ]
+              : null,
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      decoration:
+                          InputDecoration(labelText: tr(context, "rank")),
+                      initialValue: widget.step.rank.toString(),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      onChanged: (value) {
+                        var v = int.tryParse(value);
+                        if (v != null) {
+                          widget.step.rank = v;
+                        }
+                      },
                     ),
-                    // The validator receives the text that the step has entered.
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(doubleOnly)
-                    ],
-                    onChanged: (text) {
-                      var value = double.tryParse(text);
-                      if (value != null) {
-                        widget.step.longitude = value;
-                        _updateMap(
-                            widget.step.latitude, widget.step.longitude, false);
-                      } else {
-                        widget.step.longitude = 0;
-                      }
-                    },
-                  ),
-                  SizedBox(
-                    height: 350,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.0),
-                        child: FlutterMap(
-                            mapController: mapController,
-                            options: MapOptions(
-                                onTap: (tapPosition, point) {
-                                  _updateMap(
-                                      point.latitude, point.longitude, true);
-                                },
-                                center: LatLng(widget.step.latitude,
-                                    widget.step.longitude),
-                                minZoom: 0,
-                                maxZoom: 18,
-                                enableScrollWheel: true,
-                                interactiveFlags: InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate),
-                            children: <Widget>[
-                              TileLayerWidget(
-                                options: TileLayerOptions(
-                                  urlTemplate:
-                                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  subdomains: ['a', 'b', 'c'],
-                                ),
-                              ),
-                              MarkerLayerWidget(
-                                  options: MarkerLayerOptions(
-                                markers: [
-                                  Marker(
-                                    width: 80.0,
-                                    height: 80.0,
-                                    point: LatLng(widget.step.latitude,
-                                        widget.step.longitude),
-                                    builder: (ctx) => const Icon(
-                                      Icons.location_on,
-                                      color: Colors.blueAccent,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ],
-                              ))
-                            ]),
-                      ),
+                    TextFormField(
+                      initialValue: widget.step.locationHint,
+                      decoration: InputDecoration(
+                          labelText: tr(context, "location_hint")),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return tr(context, "please_enter_some_text");
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        widget.step.locationHint = value;
+                      },
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Text(tr(context, "is_end")),
-                      Checkbox(
-                          value: widget.step.isEnd,
-                          onChanged: (value) => setState(() {
-                                widget.step.isEnd = value!;
+                    TextFormField(
+                      initialValue: widget.step.question,
+                      decoration:
+                          InputDecoration(labelText: tr(context, "question")),
+                      // The validator receives the text that the step has entered.
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return tr(context, "please_enter_some_text");
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        widget.step.question = value;
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: widget.step.answer,
+                      decoration:
+                          InputDecoration(labelText: tr(context, "answer")),
+                      // The validator receives the text that the step has entered.
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return tr(context, "please_enter_some_text");
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        widget.step.answer = value;
+                      },
+                    ),
+                    TextFormField(
+                      controller: _latitudeController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                          labelText: tr(context, "latitude"),
+                          suffixIcon: IconButton(
+                              icon: const Icon(Icons.my_location),
+                              onPressed: () async {
+                                var pos = await getPosition();
+                                _updateMap(pos!.latitude, pos.longitude, true);
                               })),
-                    ],
-                  ),
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Image",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      // The validator receives the text that the step has entered.
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(doubleOnly)
+                      ],
+                      onChanged: (text) {
+                        var value = double.tryParse(text);
+                        if (value != null) {
+                          widget.step.latitude = value;
+                          _updateMap(widget.step.latitude,
+                              widget.step.longitude, false);
+                        } else {
+                          widget.step.latitude = 0;
+                        }
+                      },
+                    ),
+                    TextFormField(
+                      controller: _longitudeController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: tr(context, "longitude"),
+                      ),
+                      // The validator receives the text that the step has entered.
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(doubleOnly)
+                      ],
+                      onChanged: (text) {
+                        var value = double.tryParse(text);
+                        if (value != null) {
+                          widget.step.longitude = value;
+                          _updateMap(widget.step.latitude,
+                              widget.step.longitude, false);
+                        } else {
+                          widget.step.longitude = 0;
+                        }
+                      },
+                    ),
+                    SizedBox(
+                      height: 350,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20.0),
+                          child: FlutterMap(
+                              mapController: mapController,
+                              options: MapOptions(
+                                  onTap: (tapPosition, point) {
+                                    _updateMap(
+                                        point.latitude, point.longitude, true);
+                                  },
+                                  center: LatLng(widget.step.latitude,
+                                      widget.step.longitude),
+                                  minZoom: 0,
+                                  maxZoom: 18,
+                                  enableScrollWheel: true,
+                                  interactiveFlags: InteractiveFlag.all &
+                                      ~InteractiveFlag.rotate),
+                              children: <Widget>[
+                                TileLayerWidget(
+                                  options: TileLayerOptions(
+                                    urlTemplate:
+                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    subdomains: ['a', 'b', 'c'],
+                                  ),
+                                ),
+                                MarkerLayerWidget(
+                                    options: MarkerLayerOptions(
+                                  markers: [
+                                    Marker(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      point: LatLng(widget.step.latitude,
+                                          widget.step.longitude),
+                                      builder: (ctx) => const Icon(
+                                        Icons.location_on,
+                                        color: Colors.blueAccent,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ],
+                                ))
+                              ]),
+                        ),
                       ),
                     ),
-                  ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FutureBuilder<Uint8List?>(
-                        future: imageBytes,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data != null) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    _imgFrom(ImageSource.camera);
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: Container(
-                                      constraints: BoxConstraints(
-                                          maxHeight: 300,
-                                          maxWidth: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.75),
-                                      child: Image.memory(
-                                        snapshot.data!,
-                                        fit: BoxFit.contain,
+                    Row(
+                      children: [
+                        Text(tr(context, "is_end")),
+                        Checkbox(
+                            value: widget.step.isEnd,
+                            onChanged: (value) => setState(() {
+                                  widget.step.isEnd = value!;
+                                })),
+                      ],
+                    ),
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Image",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FutureBuilder<Uint8List?>(
+                          future: imageBytes,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data != null) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      _imgFrom(ImageSource.camera);
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      child: Container(
+                                        constraints: BoxConstraints(
+                                            maxHeight: 300,
+                                            maxWidth: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.75),
+                                        child: Image.memory(
+                                          snapshot.data!,
+                                          fit: BoxFit.contain,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        imageBytes = Future.value(null);
-                                      });
-                                    },
-                                    icon: const Icon(Icons.clear))
-                              ],
-                            );
-                          } else if (snapshot.hasError) {
-                            return Text('${snapshot.error}');
-                          }
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    _imgFrom(ImageSource.camera);
-                                  },
-                                  icon: const Icon(Icons.camera_alt)),
-                              IconButton(
-                                  onPressed: () {
-                                    _imgFrom(ImageSource.gallery);
-                                  },
-                                  icon: const Icon(Icons.upload_file)),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        tr(context, "sound"),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  _soundStatus == SoundStatus.loading
-                      ? const Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (_soundStatus == SoundStatus.available)
                                   IconButton(
                                       onPressed: () {
                                         setState(() {
-                                          if (audioPlayer.playing) {
-                                            audioPlayer.stop();
-                                          } else {
-                                            audioPlayer.play();
-                                          }
-                                        });
-                                      },
-                                      icon: audioPlayer.playing
-                                          ? const Icon(Icons.stop)
-                                          : const Icon(Icons.play_arrow)),
-                                IconButton(
-                                    onPressed: () {
-                                      _soundFrom();
-                                    },
-                                    icon: const Icon(Icons.upload_file)),
-                                if (_soundStatus == SoundStatus.available)
-                                  IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          audioPlayer.stop();
-                                          soundBytes = null;
-                                          _soundStatus = SoundStatus.none;
+                                          imageBytes = Future.value(null);
                                         });
                                       },
                                       icon: const Icon(Icons.clear))
-                              ]),
-                        ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: 140,
-                      height: 50,
-                      child: Center(
-                        child: AnimatedSwitcher(
-                          switchInCurve: const Interval(
-                            0.5,
-                            1,
-                            curve: Curves.linear,
-                          ),
-                          switchOutCurve: const Interval(
-                            0,
-                            0.5,
-                            curve: Curves.linear,
-                          ).flipped,
-                          duration: const Duration(milliseconds: 500),
-                          child: !_submitting
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    // Validate returns true if the form is valid, or false otherwise.
-                                    if (_formKey.currentState!.validate()) {
-                                      setState(() {
-                                        _submitting = true;
-                                      });
-                                      var msg = tr(context, "step_created");
-                                      try {
-                                        if (widget.step.id > 0) {
-                                          await widget.crud.update(widget.step);
-                                          await _imgToServer(widget.step.id);
-                                          await _soundToServer(widget.step.id);
-                                        } else {
-                                          var t = await widget.crud
-                                              .create(widget.step);
-                                          await _imgToServer(t.id);
-                                          await _soundToServer(t.id);
-                                          await http.delete(
-                                              Uri.parse(
-                                                  '${App().prefs.hostname}/api/admin/steps/sounds/${_randomId.toString()}'),
-                                              headers: <String, String>{
-                                                'Authorization': "Bearer " +
-                                                    App().prefs.token
-                                              });
-                                        }
-                                        // Do nothing on TypeError as Create respond with a null id
-                                      } catch (e) {
-                                        msg = e.toString();
-                                      }
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(content: Text(msg)),
-                                      );
-                                      Navigator.pop(context);
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Text(tr(context, "submit")),
-                                  ),
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator()),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              return Text('${snapshot.error}');
+                            }
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                    onPressed: () {
+                                      _imgFrom(ImageSource.camera);
+                                    },
+                                    icon: const Icon(Icons.camera_alt)),
+                                IconButton(
+                                    onPressed: () {
+                                      _imgFrom(ImageSource.gallery);
+                                    },
+                                    icon: const Icon(Icons.upload_file)),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            )),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          tr(context, "sound"),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    _soundStatus == SoundStatus.loading
+                        ? const Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_soundStatus == SoundStatus.available)
+                                    IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (audioPlayer.playing) {
+                                              audioPlayer.stop();
+                                            } else {
+                                              audioPlayer.play();
+                                            }
+                                          });
+                                        },
+                                        icon: audioPlayer.playing
+                                            ? const Icon(Icons.stop)
+                                            : const Icon(Icons.play_arrow)),
+                                  IconButton(
+                                      onPressed: () {
+                                        _soundFrom();
+                                      },
+                                      icon: const Icon(Icons.upload_file)),
+                                  if (_soundStatus == SoundStatus.available)
+                                    IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            audioPlayer.stop();
+                                            soundBytes = null;
+                                            _soundStatus = SoundStatus.none;
+                                          });
+                                        },
+                                        icon: const Icon(Icons.clear))
+                                ]),
+                          ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: SizedBox(
+                        width: 140,
+                        height: 50,
+                        child: Center(
+                          child: AnimatedSwitcher(
+                            switchInCurve: const Interval(
+                              0.5,
+                              1,
+                              curve: Curves.linear,
+                            ),
+                            switchOutCurve: const Interval(
+                              0,
+                              0.5,
+                              curve: Curves.linear,
+                            ).flipped,
+                            duration: const Duration(milliseconds: 500),
+                            child: _soundStatus == SoundStatus.loading
+                                ? const SizedBox.shrink()
+                                : !_submitting
+                                    ? ElevatedButton(
+                                        onPressed: () async {
+                                          // Validate returns true if the form is valid, or false otherwise.
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            setState(() {
+                                              _submitting = true;
+                                            });
+                                            var msg =
+                                                tr(context, "step_created");
+                                            try {
+                                              if (widget.step.id > 0) {
+                                                await widget.crud
+                                                    .update(widget.step);
+                                                await _imgToServer(
+                                                    widget.step.id);
+                                                await _soundToServer(
+                                                    widget.step.id);
+                                              } else {
+                                                var t = await widget.crud
+                                                    .create(widget.step);
+                                                await _imgToServer(t.id);
+                                                await _soundToServer(t.id);
+                                                await _deleteTemporarySound();
+                                              }
+                                              // Do nothing on TypeError as Create respond with a null id
+                                            } catch (e) {
+                                              msg = e.toString();
+                                            }
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(content: Text(msg)),
+                                            );
+                                            Navigator.pop(context);
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Text(tr(context, "submit")),
+                                        ),
+                                      )
+                                    : const Center(
+                                        child: CircularProgressIndicator()),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ),
       ),
     );
   }
@@ -621,6 +630,15 @@ class _NewEditStepState extends State<NewEditStep>
       _latitudeController?.text = emptyIfZero(widget.step.latitude);
       _longitudeController?.text = emptyIfZero(widget.step.longitude);
     }
+  }
+
+  _deleteTemporarySound() {
+    http.delete(
+        Uri.parse(
+            '${App().prefs.hostname}/api/admin/steps/sounds/${_randomId.toString()}'),
+        headers: <String, String>{
+          'Authorization': "Bearer " + App().prefs.token
+        });
   }
 }
 
