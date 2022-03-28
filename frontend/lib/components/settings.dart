@@ -23,7 +23,8 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   String _logContent = "";
   bool _logEnabled = App().prefs.logEnabled;
-  var redrawObject = Object();
+  var redrawUsers = Object();
+  var redrawSteps = Object();
   static const _url =
       'https://github.com/nicolaspernoud/pistou/releases/latest';
   @override
@@ -58,6 +59,27 @@ class _SettingsState extends State<Settings> {
           child: ListView(
             children: [
               SettingsField(onboarding: false, onChange: () => setState(() {})),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Text(
+                    tr(context, "sound_speed"),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              Slider(
+                value: App().prefs.soundSpeed,
+                max: 200,
+                min: 0,
+                divisions: 20,
+                label: App().prefs.soundSpeed.round().toString(),
+                onChanged: (double value) {
+                  setState(() {
+                    App().prefs.soundSpeed = value;
+                  });
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ElevatedButton(
@@ -83,7 +105,7 @@ class _SettingsState extends State<Settings> {
                   ),
                 ),
                 FutureBuilder<List<User>>(
-                  key: ValueKey<Object>(redrawObject),
+                  key: ValueKey<Object>(redrawUsers),
                   future: widget.usersCrud.read(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -141,7 +163,7 @@ class _SettingsState extends State<Settings> {
                   ),
                 ),
                 FutureBuilder<List<Step>>(
-                  key: ValueKey<Object>(redrawObject),
+                  key: ValueKey<Object>(redrawSteps),
                   future: widget.stepsCrud.read(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -207,10 +229,11 @@ class _SettingsState extends State<Settings> {
                     Checkbox(
                       onChanged: (bool? value) {
                         if (value != null) {
-                          _logEnabled = value;
                           App().prefs.logEnabled = value;
+                          setState(() {
+                            _logEnabled = value;
+                          });
                         }
-                        setState(() {});
                       },
                       value: _logEnabled,
                     ),
@@ -248,7 +271,7 @@ class _SettingsState extends State<Settings> {
       return NewEditUser(crud: APICrud<User>(), user: u);
     }));
     setState(() {
-      redrawObject = Object();
+      redrawUsers = Object();
     });
   }
 
@@ -258,7 +281,7 @@ class _SettingsState extends State<Settings> {
       return NewEditStep(crud: APICrud<Step>(), step: s);
     }));
     setState(() {
-      redrawObject = Object();
+      redrawSteps = Object();
     });
   }
 }

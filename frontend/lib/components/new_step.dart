@@ -525,7 +525,7 @@ class _NewEditStepState extends State<NewEditStep>
                                           });
                                         },
                                         icon: audioPlayer.playing
-                                            ? const Icon(Icons.stop)
+                                            ? const Icon(Icons.pause)
                                             : const Icon(Icons.play_arrow)),
                                   IconButton(
                                       onPressed: () {

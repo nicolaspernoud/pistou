@@ -73,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await audioPlayer.setUrl(url);
         setState(() {
           _hasSound = true;
+          audioPlayer.setSpeed(App().prefs.soundSpeed / 100.0);
           audioPlayer.play();
         });
       } catch (e) {
@@ -213,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     play();
                                   },
                                   icon: audioPlayer.playing
-                                      ? const Icon(Icons.stop)
+                                      ? const Icon(Icons.pause)
                                       : const Icon(Icons.play_arrow)),
                             if (!snapshot.data!.isEnd) ...[
                               Center(
@@ -294,6 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (audioPlayer.playing) {
         audioPlayer.stop();
       } else {
+        audioPlayer.setSpeed(App().prefs.soundSpeed / 100.0);
         audioPlayer.play();
       }
     });
