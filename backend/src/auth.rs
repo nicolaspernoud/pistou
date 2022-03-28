@@ -74,7 +74,7 @@ impl Bearer {
 }
 
 #[cfg(test)]
-mod tests {
+mod bearer_tests {
     use super::*;
 
     #[test]
@@ -109,5 +109,126 @@ mod tests {
         let scheme = Bearer::parse(&value);
 
         assert!(scheme.is_err());
+    }
+}
+
+#[cfg(test)]
+mod extractor_tests {
+    use actix_web::web::{Bytes, Data};
+    use actix_web::{
+        get,
+        http::{self},
+        test, App, HttpResponse,
+    };
+
+    use crate::app::AppConfig;
+
+    use super::Authenticated;
+
+    #[get("/")]
+    pub async fn read(_: Authenticated) -> HttpResponse {
+        HttpResponse::Ok().body("RESTRICTED TO AUTHENTICATED USERS")
+    }
+
+    #[actix_web::test]
+    async fn test_no_header() {
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .service(read),
+        )
+        .await;
+
+        // No header
+        let req = test::TestRequest::with_uri("/").to_request();
+        let res = test::call_service(&app, req).await;
+        assert_eq!(res.status(), http::StatusCode::UNAUTHORIZED);
+        let body = test::read_body(res).await;
+        assert_eq!(body, Bytes::from_static(b"no authorization header"));
+    }
+
+    #[actix_web::test]
+    async fn test_empty_header() {
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .service(read),
+        )
+        .await;
+
+        // Empty header
+        let req = test::TestRequest::with_uri("/")
+            .insert_header(("Authorization", ""))
+            .to_request();
+        let res = test::call_service(&app, req).await;
+        assert_eq!(res.status(), http::StatusCode::UNAUTHORIZED);
+        let body = test::read_body(res).await;
+        assert_eq!(
+            body,
+            Bytes::from_static(b"authorization header is too short")
+        );
+    }
+
+    #[actix_web::test]
+    async fn test_empty_token() {
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .service(read),
+        )
+        .await;
+
+        // Empty token
+        let req = test::TestRequest::with_uri("/")
+            .insert_header(("Authorization", "Bearer "))
+            .to_request();
+        let res = test::call_service(&app, req).await;
+        assert_eq!(res.status(), http::StatusCode::UNAUTHORIZED);
+        let body = test::read_body(res).await;
+        assert_eq!(
+            body,
+            Bytes::from_static(b"authorization header is too short")
+        );
+    }
+
+    #[actix_web::test]
+    async fn test_wrong_token() {
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .service(read),
+        )
+        .await;
+
+        // Wrong token
+        let req = test::TestRequest::with_uri("/")
+            .insert_header(("Authorization", "Bearer 0202"))
+            .to_request();
+        let res = test::call_service(&app, req).await;
+        assert_eq!(res.status(), http::StatusCode::FORBIDDEN);
+        let body = test::read_body(res).await;
+        assert_eq!(body, Bytes::from_static(b"wrong token"));
+    }
+
+    #[actix_web::test]
+    async fn test_good_token() {
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .service(read),
+        )
+        .await;
+
+        // Good token
+        let req = test::TestRequest::with_uri("/")
+            .insert_header(("Authorization", "Bearer 0101"))
+            .to_request();
+        let res = test::call_service(&app, req).await;
+        assert_eq!(res.status(), http::StatusCode::OK);
+        let body = test::read_body(res).await;
+        assert_eq!(
+            body,
+            Bytes::from_static(b"RESTRICTED TO AUTHENTICATED USERS")
+        );
     }
 }

@@ -19,6 +19,11 @@ Future<Position?> getPosition() async {
         time: DateTime.now());
   } on Exception catch (e) {
     await App().log(e.toString());
+    throw GPSException(e.toString());
   }
-  return null;
+}
+
+class GPSException implements Exception {
+  String cause;
+  GPSException(this.cause);
 }

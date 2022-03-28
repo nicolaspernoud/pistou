@@ -80,6 +80,8 @@ class AdvanceCrud {
             step: null, outcome: tr(context, "no_more_steps"));
       }
       return AdvanceCrudResponse(step: null, outcome: "bad_response_code");
+    } on GPSException {
+      return AdvanceCrudResponse(step: null, outcome: tr(context, "gps_error"));
     } on Exception catch (e) {
       return AdvanceCrudResponse(step: null, outcome: e.toString());
     }
