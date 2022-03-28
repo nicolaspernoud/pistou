@@ -2,8 +2,8 @@ use log::{debug, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    crud_create, crud_delete, crud_delete_all, crud_read, crud_read_all, crud_use,
-    errors::ServerError, models::step::Step, schema::users,
+    crud_delete, crud_delete_all, crud_read, crud_read_all, crud_use, errors::ServerError,
+    models::step::Step, schema::users,
 };
 
 use argon2::{
@@ -63,7 +63,24 @@ impl NewUser {
 }
 
 crud_use!();
-crud_create!(NewUser, User, users,);
+
+#[post("")]
+pub async fn create(
+    pool: web::Data<DbPool>,
+    mut o: web::Json<NewUser>,
+) -> Result<HttpResponse, ServerError> {
+    let conn = pool.get()?;
+    let created_o: Result<User, ServerError> = web::block(move || {
+        use crate::schema::users::dsl::*;
+        o.trim()?;
+        diesel::insert_into(users).values(&*o).execute(&conn)?;
+        let o = users.order(id.desc()).first::<User>(&conn)?;
+        Ok(o)
+    })
+    .await?;
+    Ok(HttpResponse::Created().json(created_o?))
+}
+
 crud_read_all!(User, users);
 crud_read!(User, users);
 
@@ -72,6 +89,7 @@ pub async fn update(
     pool: web::Data<DbPool>,
     mut o: web::Json<User>,
     oid: web::Path<i32>,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     let conn = pool.get()?;
     let put_o: Result<User, ServerError> = web::block(move || {

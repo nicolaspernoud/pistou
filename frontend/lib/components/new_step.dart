@@ -66,13 +66,12 @@ class _NewEditStepState extends State<NewEditStep>
   Future<void> _setPlayerUrl(int id) async {
     // Dummy loading to force cache flush
     try {
-      await audioPlayer.setUrl(
-          '${App().prefs.hostname}/api/common/steps/sounds/dummy',
+      await audioPlayer.setUrl('${App().prefs.hostname}/api/steps/sounds/dummy',
           preload: false);
     } on Exception catch (_) {}
     try {
-      await audioPlayer.setUrl(
-          '${App().prefs.hostname}/api/common/steps/sounds/${id.toString()}');
+      await audioPlayer
+          .setUrl('${App().prefs.hostname}/api/steps/sounds/${id.toString()}');
       setState(() {
         _soundStatus = SoundStatus.available;
       });
@@ -139,7 +138,7 @@ class _NewEditStepState extends State<NewEditStep>
       }
       final response = await http.post(
           Uri.parse(
-              '${App().prefs.hostname}/api/admin/steps/images/${id.toString()}'),
+              '${App().prefs.hostname}/api/steps/images/${id.toString()}'),
           headers: <String, String>{
             'Authorization': "Bearer " + App().prefs.token
           },
@@ -149,8 +148,7 @@ class _NewEditStepState extends State<NewEditStep>
       }
     } else {
       await http.delete(
-        Uri.parse(
-            '${App().prefs.hostname}/api/admin/steps/images/${id.toString()}'),
+        Uri.parse('${App().prefs.hostname}/api/steps/images/${id.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer " + App().prefs.token
         },
@@ -160,8 +158,7 @@ class _NewEditStepState extends State<NewEditStep>
 
   _imgFromServer(int id) async {
     final response = await http.get(
-      Uri.parse(
-          '${App().prefs.hostname}/api/common/steps/images/${id.toString()}'),
+      Uri.parse('${App().prefs.hostname}/api/steps/images/${id.toString()}'),
       headers: <String, String>{'Authorization': "Bearer " + App().prefs.token},
     );
     if (response.statusCode == 200) {
@@ -194,7 +191,7 @@ class _NewEditStepState extends State<NewEditStep>
     if (soundBytes != null) {
       final response = await http.post(
           Uri.parse(
-              '${App().prefs.hostname}/api/admin/steps/sounds/${id.toString()}'),
+              '${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
           headers: <String, String>{
             'Authorization': "Bearer " + App().prefs.token
           },
@@ -204,8 +201,7 @@ class _NewEditStepState extends State<NewEditStep>
       }
     } else {
       http.delete(
-        Uri.parse(
-            '${App().prefs.hostname}/api/admin/steps/sounds/${id.toString()}'),
+        Uri.parse('${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer " + App().prefs.token
         },
@@ -635,7 +631,7 @@ class _NewEditStepState extends State<NewEditStep>
   _deleteTemporarySound() {
     http.delete(
         Uri.parse(
-            '${App().prefs.hostname}/api/admin/steps/sounds/${_randomId.toString()}'),
+            '${App().prefs.hostname}/api/steps/sounds/${_randomId.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer " + App().prefs.token
         });

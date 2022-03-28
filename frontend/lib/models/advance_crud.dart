@@ -29,7 +29,7 @@ class AdvanceCrud {
   Future<AdvanceCrudResponse> getCurrentStep(context) async {
     try {
       var base = App().prefs.hostname + "/api";
-      var route = "common/users/${App().prefs.userId}/current_step";
+      var route = "users/${App().prefs.userId}/current_step";
       final response =
           await client.get(Uri.parse('$base/$route'), headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -53,7 +53,7 @@ class AdvanceCrud {
       answer.longitude = position.longitude;
       answer.password = App().prefs.userPassword;
       var base = App().prefs.hostname + "/api";
-      var route = "common/users/${App().prefs.userId}/advance";
+      var route = "users/${App().prefs.userId}/advance";
       final response = await client.post(Uri.parse('$base/$route'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',

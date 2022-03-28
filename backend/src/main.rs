@@ -12,6 +12,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use crate::app::AppConfig;
 
 mod app;
+mod auth;
 mod db_options;
 mod errors;
 mod models;

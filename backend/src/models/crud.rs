@@ -5,6 +5,7 @@ macro_rules! crud_use {
         use diesel::prelude::*;
         use diesel::r2d2::ConnectionManager;
         type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
+        use crate::auth::Authenticated;
     };
 }
 
@@ -31,7 +32,10 @@ macro_rules! crud_read {
 macro_rules! crud_read_all {
     ($model:ty, $table:tt) => {
         #[get("")]
-        pub async fn read_all(pool: web::Data<DbPool>) -> Result<HttpResponse, ServerError> {
+        pub async fn read_all(
+            pool: web::Data<DbPool>,
+            _: Authenticated,
+        ) -> Result<HttpResponse, ServerError> {
             let conn = pool.get()?;
             let object = web::block(move || {
                 use crate::schema::$table::dsl::*;
@@ -50,6 +54,7 @@ macro_rules! crud_create {
         pub async fn create(
             pool: web::Data<DbPool>,
             mut o: web::Json<$inmodel>,
+            _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
             let conn = pool.get()?;
             let created_o: Result<$outmodel, ServerError> = web::block(move || {
@@ -79,6 +84,7 @@ macro_rules! crud_update {
             pool: web::Data<DbPool>,
             o: web::Json<$model>,
             oid: web::Path<i32>,
+            _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
             let conn = pool.get()?;
             let put_o: Result<$model, ServerError> = web::block(move || {
@@ -109,6 +115,7 @@ macro_rules! crud_delete {
         pub async fn delete(
             pool: web::Data<DbPool>,
             oid: web::Path<i32>,
+            _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
             let conn = pool.get()?;
             let oid = *oid;
@@ -130,7 +137,10 @@ macro_rules! crud_delete {
 macro_rules! crud_delete_all {
     ($model:ty, $table:tt) => {
         #[delete("")]
-        pub async fn delete_all(pool: web::Data<DbPool>) -> Result<HttpResponse, ServerError> {
+        pub async fn delete_all(
+            pool: web::Data<DbPool>,
+            _: Authenticated,
+        ) -> Result<HttpResponse, ServerError> {
             let conn = pool.get()?;
             web::block(move || {
                 use crate::schema::$table::dsl::*;

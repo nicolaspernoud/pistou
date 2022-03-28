@@ -12,20 +12,32 @@ pub async fn user_test(
 
     let mut app = test::init_service(create_app!(pool, app_config)).await;
 
-    // Check that using the wrong token gives an unauthorized error
-    let req = test::TestRequest::with_uri("/api/admin/users")
-        .method(Method::GET)
-        .insert_header(("Authorization", "Bearer 0102"))
-        .to_request();
-    use actix_web::dev::Service;
-    let resp = app.call(req).await;
-    assert!(resp.is_err());
-    assert!(resp.err().unwrap().to_string() == "Wrong token!");
+    // Delete all the users with no token
+    do_test!(
+        app,
+        "",
+        Method::DELETE,
+        "/api/users",
+        "",
+        StatusCode::UNAUTHORIZED,
+        "authorization header is too short"
+    );
+
+    // Delete all the users with a wrong token
+    do_test!(
+        app,
+        "0102",
+        Method::DELETE,
+        "/api/users",
+        "",
+        StatusCode::FORBIDDEN,
+        "wrong token"
+    );
 
     // Delete all the users
     let req = test::TestRequest::delete()
         .insert_header(("Authorization", "Bearer 0101"))
-        .uri("/api/admin/users")
+        .uri("/api/users")
         .to_request();
     test::call_service(&mut app, req).await;
 
@@ -34,7 +46,7 @@ pub async fn user_test(
         app,
         "",
         Method::POST,
-        "/api/common/users",
+        "/api/users",
         r#"{"name":"  Test name  ","password":""}"#,
         StatusCode::NOT_ACCEPTABLE,
         "password cannot be empty"
@@ -45,7 +57,7 @@ pub async fn user_test(
         app,
         "",
         Method::POST,
-        "/api/common/users",
+        "/api/users",
         r#"{"name":"  Test name  ","password":"    Test password       "}"#,
         StatusCode::CREATED,
         r#"{"id":"#
@@ -56,7 +68,7 @@ pub async fn user_test(
         app,
         "",
         Method::GET,
-        &format!("/api/common/users/{}", id),
+        &format!("/api/users/{}", id),
         "",
         StatusCode::OK,
         format!(r#"{{"id":{id},"name":"Test name","current_step":1}}"#)
@@ -67,7 +79,7 @@ pub async fn user_test(
         app,
         "",
         Method::GET,
-        &format!("/api/common/users/{}", id + 1),
+        &format!("/api/users/{}", id + 1),
         "",
         StatusCode::NOT_FOUND,
         "Item not found"
@@ -78,7 +90,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::PUT,
-        &format!("/api/admin/users/{}", id),
+        &format!("/api/users/{}", id),
         &format!(
             r#"{{"id":{id}, "name":"  Patched test name   ","password":"    Patched test password       ","current_step":2}}"#
         ),
@@ -91,7 +103,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::DELETE,
-        &format!("/api/admin/users/{}", id),
+        &format!("/api/users/{}", id),
         "",
         StatusCode::OK,
         format!("Deleted object with id: {}", id)
@@ -102,7 +114,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::DELETE,
-        &format!("/api/admin/users/{}", id + 1),
+        &format!("/api/users/{}", id + 1),
         "",
         StatusCode::NOT_FOUND,
         "Item not found"
@@ -111,7 +123,7 @@ pub async fn user_test(
     // Delete all the users
     let req = test::TestRequest::delete()
         .insert_header(("Authorization", "Bearer 0101"))
-        .uri("/api/admin/users")
+        .uri("/api/users")
         .to_request();
     test::call_service(&mut app, req).await;
 
@@ -120,7 +132,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::POST,
-        "/api/common/users",
+        "/api/users",
         r#"{"name":"01_name","password":"01_password"}"#,
         StatusCode::CREATED,
         r#"{"id""#
@@ -129,7 +141,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::POST,
-        "/api/common/users",
+        "/api/users",
         r#"{"name":"02_name","password":"02_password"}"#,
         StatusCode::CREATED,
         r#"{"id""#
@@ -138,7 +150,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::GET,
-        "/api/admin/users",
+        "/api/users",
         "",
         StatusCode::OK,
         format!(
@@ -151,7 +163,7 @@ pub async fn user_test(
         app,
         "0101",
         Method::DELETE,
-        "/api/admin/users",
+        "/api/users",
         "",
         StatusCode::OK,
         "Deleted all objects"

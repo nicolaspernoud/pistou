@@ -73,10 +73,9 @@ class APICrud<T extends Serialisable> extends Crud<T> {
 
   @override
   Future<dynamic> create(T val) async {
-    var prefix = (route == "steps") ? "admin" : "common";
     try {
       final response = await client.post(
-        Uri.parse('$base/$prefix/$route'),
+        Uri.parse('$base/$route'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': "Bearer " + token
@@ -95,7 +94,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
   Future<T> readOne(int id) async {
     try {
       final response = await client.get(
-        Uri.parse('$base/common/$route/${id.toString()}'),
+        Uri.parse('$base/$route/${id.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer " + token,
           'Content-Type': 'application/json'
@@ -116,8 +115,8 @@ class APICrud<T extends Serialisable> extends Crud<T> {
     try {
       final response = await client.get(
         queryFilter == null
-            ? Uri.parse('$base/admin/$route')
-            : Uri.parse('$base/admin/$route?$queryFilter'),
+            ? Uri.parse('$base/$route')
+            : Uri.parse('$base/$route?$queryFilter'),
         headers: <String, String>{'Authorization': "Bearer " + token},
       );
       if (response.statusCode == 200) {
@@ -139,7 +138,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
   update(T val) async {
     try {
       final response = await client.put(
-        Uri.parse('$base/admin/$route/${val.id}'),
+        Uri.parse('$base/$route/${val.id}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': "Bearer " + token
@@ -158,7 +157,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
   delete(int id) async {
     try {
       final response = await client.delete(
-        Uri.parse('$base/admin/$route/$id'),
+        Uri.parse('$base/$route/$id'),
         headers: <String, String>{'Authorization': "Bearer " + token},
       );
       if (response.statusCode != 200) {

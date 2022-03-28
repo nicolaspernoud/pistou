@@ -116,6 +116,7 @@ crud_use!();
 pub async fn create(
     pool: web::Data<DbPool>,
     mut o: web::Json<NewStep>,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     let conn = pool.get()?;
     let s = web::block(move || {
@@ -134,6 +135,7 @@ pub async fn create(
 pub async fn delete(
     pool: web::Data<DbPool>,
     oid: web::Path<i32>,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     let conn = pool.get()?;
     let oid = *oid;
@@ -157,6 +159,7 @@ pub async fn update(
     pool: web::Data<DbPool>,
     mut o: web::Json<Step>,
     oid: web::Path<i32>,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     let conn = pool.get()?;
     o.trim();
@@ -195,6 +198,7 @@ const IMAGES_PATH: &str = "data/items/images";
 async fn upload_image(
     oid: web::Path<i32>,
     mut body: web::Payload,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     create_dir_all(IMAGES_PATH)?;
     let filename = image_filename(*oid);
@@ -227,7 +231,7 @@ async fn retrieve_image(oid: web::Path<i32>) -> Result<NamedFile> {
 }
 
 #[delete("/images/{oid}")]
-async fn delete_image(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
+async fn delete_image(oid: web::Path<i32>, _: Authenticated) -> Result<HttpResponse, ServerError> {
     let d = web::block(move || remove_file(image_filename(*oid))).await?;
     if let Ok(_) = d {
         Ok(HttpResponse::Ok().body("File deleted"))
@@ -251,6 +255,7 @@ const SOUNDS_PATH: &str = "data/items/sounds";
 async fn upload_sound(
     oid: web::Path<i32>,
     mut body: web::Payload,
+    _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     create_dir_all(SOUNDS_PATH)?;
     let filename = sound_filename(*oid);
@@ -267,7 +272,7 @@ async fn retrieve_sound(oid: web::Path<i32>) -> Result<NamedFile> {
 }
 
 #[delete("/sounds/{oid}")]
-async fn delete_sound(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
+async fn delete_sound(oid: web::Path<i32>, _: Authenticated) -> Result<HttpResponse, ServerError> {
     let d = web::block(move || remove_file(sound_filename(*oid))).await?;
     if let Ok(_) = d {
         Ok(HttpResponse::Ok().body("File deleted"))

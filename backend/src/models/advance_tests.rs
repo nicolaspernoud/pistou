@@ -15,14 +15,14 @@ pub async fn advance_test(
     // Delete all the users
     let req = test::TestRequest::delete()
         .insert_header(("Authorization", "Bearer 0101"))
-        .uri("/api/admin/users")
+        .uri("/api/users")
         .to_request();
     test::call_service(&mut app, req).await;
 
     // Delete all the steps
     let req = test::TestRequest::delete()
         .insert_header(("Authorization", "Bearer 0101"))
-        .uri("/api/admin/steps")
+        .uri("/api/steps")
         .to_request();
     test::call_service(&mut app, req).await;
 
@@ -31,7 +31,7 @@ pub async fn advance_test(
         app,
         "",
         Method::POST,
-        "/api/common/users",
+        "/api/users",
         r#"{"name":"  Test name  ","password":"    Test password       "}"#,
         StatusCode::CREATED,
         r#"{"id":"#
@@ -42,7 +42,7 @@ pub async fn advance_test(
         app,
         "0101",
         Method::POST,
-        "/api/admin/steps",
+        "/api/steps",
         r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
@@ -51,7 +51,7 @@ pub async fn advance_test(
         app,
         "0101",
         Method::POST,
-        "/api/admin/steps",
+        "/api/steps",
         r#"{"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","media":"2.jpg","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
@@ -60,9 +60,9 @@ pub async fn advance_test(
     // Get the current step
     do_test!(
         app,
-        "0101",
+        "",
         Method::GET,
-        &format!("/api/common/users/{id}/current_step"),
+        &format!("/api/users/{id}/current_step"),
         "",
         StatusCode::OK,
         format!(
@@ -73,9 +73,9 @@ pub async fn advance_test(
     // Try to advance step with the wrong password (must fail)
     do_test!(
         app,
-        "0101",
+        "",
         Method::POST,
-        &format!("/api/common/users/{id}/advance"),
+        &format!("/api/users/{id}/advance"),
         r#"{"password":"Wrong test password","latitude":45.74846,"longitude":4.84671,"answer":"yellow"}"#,
         StatusCode::FORBIDDEN,
         r#"{"type":"WrongPassword"}"#
@@ -83,9 +83,9 @@ pub async fn advance_test(
     // Try to advance step with the right password, but the wrong position (must fail, and give a hint on how to reach the right position)
     do_test!(
         app,
-        "0101",
+        "",
         Method::POST,
-        &format!("/api/common/users/{id}/advance"),
+        &format!("/api/users/{id}/advance"),
         r#"{"password":"Test password","latitude":45.16667,"longitude":5.71667,"answer":"yellow"}"#,
         StatusCode::NOT_ACCEPTABLE,
         r#"{"type":"WrongPlace","distance":93749.54"#
@@ -94,9 +94,9 @@ pub async fn advance_test(
     // Try to advance step with the right password, the right position, but the wrong answer (must fail)
     do_test!(
         app,
-        "0101",
+        "",
         Method::POST,
-        &format!("/api/common/users/{id}/advance"),
+        &format!("/api/users/{id}/advance"),
         r#"{"password":"Test password","latitude":45.74846,"longitude":4.84671,"answer":"yellow"}"#,
         StatusCode::NOT_ACCEPTABLE,
         r#"{"type":"WrongAnswer"}"#
@@ -105,9 +105,9 @@ pub async fn advance_test(
     // Try to advance step with the right password, the right position, and the right answer (must pass)
     do_test!(
         app,
-        "0101",
+        "",
         Method::POST,
-        &format!("/api/common/users/{id}/advance"),
+        &format!("/api/users/{id}/advance"),
         r#"{"password":"Test password","latitude":45.74846,"longitude":4.84671,"answer":"blue"}"#,
         StatusCode::OK,
         format!(
@@ -118,9 +118,9 @@ pub async fn advance_test(
     // Get the current step
     do_test!(
         app,
-        "0101",
+        "",
         Method::GET,
-        &format!("/api/common/users/{id}/current_step"),
+        &format!("/api/users/{id}/current_step"),
         "",
         StatusCode::OK,
         format!(
@@ -131,9 +131,9 @@ pub async fn advance_test(
     // Try to advance step with the right password, the right position, and a CLOSE answer (must pass, with 404 since there is no more steps)
     do_test!(
         app,
-        "0101",
+        "",
         Method::POST,
-        &format!("/api/common/users/{id}/advance"),
+        &format!("/api/users/{id}/advance"),
         r#"{"password":"Test password","latitude":45.16667,"longitude":5.71667,"answer":"parc tete dor"}"#,
         StatusCode::NOT_FOUND,
         "Item not found"
@@ -144,7 +144,7 @@ pub async fn advance_test(
         app,
         "0101",
         Method::DELETE,
-        "/api/admin/users",
+        "/api/users",
         "",
         StatusCode::OK,
         "Deleted all objects"
@@ -155,7 +155,7 @@ pub async fn advance_test(
         app,
         "0101",
         Method::DELETE,
-        "/api/admin/steps",
+        "/api/steps",
         "",
         StatusCode::OK,
         "Deleted all objects"

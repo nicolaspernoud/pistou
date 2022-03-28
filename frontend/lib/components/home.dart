@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _hasSound = false;
       });
       String url =
-          '${App().prefs.hostname}/api/common/steps/sounds/${s.id.toString()}';
+          '${App().prefs.hostname}/api/steps/sounds/${s.id.toString()}';
       try {
         await audioPlayer.setUrl(url);
         setState(() {
@@ -198,7 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0),
                                     child: Image.network(
-                                      '${App().prefs.hostname}/api/common/steps/images/${snapshot.data!.id.toString()}',
+                                      '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
                                       errorBuilder: (BuildContext context,
                                           Object exception,
                                           StackTrace? stackTrace) {
