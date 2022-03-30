@@ -231,7 +231,7 @@ class _NewEditStepState extends State<NewEditStep>
       child: Scaffold(
         appBar: AppBar(
           title: widget.step.id > 0
-              ? Text(tr(context, "edit_step"))
+              ? Text('${tr(context, "edit_step")} (id: ${widget.step.id})')
               : Text(tr(context, "new_step")),
           actions: widget.step.id > 0
               ? [

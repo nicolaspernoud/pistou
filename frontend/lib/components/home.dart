@@ -177,98 +177,95 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (context, snapshot) {
                     Widget child;
                     if (snapshot.hasData) {
-                      child = SingleChildScrollView(
+                      child = Column(
                         key: ValueKey(snapshot.data!.id),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.not_listed_location, size: 40),
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                snapshot.data!.locationHint,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  child: InteractiveViewer(
+                                    panEnabled: true,
+                                    minScale: 1,
+                                    maxScale: 10,
+                                    child: Image.network(
+                                      '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
+                                      errorBuilder: (BuildContext context,
+                                          Object exception,
+                                          StackTrace? stackTrace) {
+                                        return const Text('-');
+                                      },
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )),
+                            ),
+                          ),
+                          if (_hasSound)
+                            IconButton(
+                                onPressed: () {
+                                  play();
+                                },
+                                icon: audioPlayer.playing
+                                    ? const Icon(Icons.pause)
+                                    : const Icon(Icons.play_arrow)),
+                          if (!snapshot.data!.isEnd) ...[
                             Center(
                               child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(8.0),
                                 child: Text(
-                                  snapshot.data!.locationHint,
+                                  snapshot.data!.question,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: InteractiveViewer(
-                                      panEnabled: true,
-                                      minScale: 1,
-                                      maxScale: 10,
-                                      child: Image.network(
-                                        '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
-                                        errorBuilder: (BuildContext context,
-                                            Object exception,
-                                            StackTrace? stackTrace) {
-                                          return const Text('-');
-                                        },
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextFormField(
+                                controller: _answerController,
+                                decoration: InputDecoration(
+                                  icon: const Icon(Icons.help),
+                                  labelText: tr(context, "answer"),
+                                ),
+                                onChanged: (String? value) {
+                                  answer.answer = value!;
+                                },
                               ),
                             ),
-                            if (_hasSound)
-                              IconButton(
-                                  onPressed: () {
-                                    play();
-                                  },
-                                  icon: audioPlayer.playing
-                                      ? const Icon(Icons.pause)
-                                      : const Icon(Icons.play_arrow)),
-                            if (!snapshot.data!.isEnd) ...[
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Text(
-                                    snapshot.data!.question,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _getCurrentStep(true);
+                                },
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.my_location,
+                                      color: Colors.amberAccent,
+                                      size: 24.0,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(tr(context, "give_answer")),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: TextFormField(
-                                  controller: _answerController,
-                                  decoration: InputDecoration(
-                                    icon: const Icon(Icons.help),
-                                    labelText: tr(context, "answer"),
-                                  ),
-                                  onChanged: (String? value) {
-                                    answer.answer = value!;
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _getCurrentStep(true);
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.my_location,
-                                        color: Colors.amberAccent,
-                                        size: 24.0,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Text(tr(context, "give_answer")),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
+                            )
                           ],
-                        ),
+                        ],
                       );
                     } else if (snapshot.hasError) {
                       child = Text('${snapshot.error}');
