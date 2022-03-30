@@ -124,7 +124,8 @@ pub async fn create(
         o.trim();
         diesel::insert_into(steps).values(&*o).execute(&conn)?;
         // Renumber the steps
-        rerank(&conn, None)?;
+        let s = steps.order(id.desc()).first::<Step>(&conn)?;
+        rerank(&conn, Some((s.id, Ordering::Less)))?;
         steps.order(id.desc()).first::<Step>(&conn)
     })
     .await??;
