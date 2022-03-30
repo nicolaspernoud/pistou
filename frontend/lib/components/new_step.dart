@@ -46,7 +46,7 @@ class _NewEditStepState extends State<NewEditStep>
   bool _submitting = false;
   AudioPlayer audioPlayer = AudioPlayer();
   SoundStatus _soundStatus = SoundStatus.none;
-  Uint8List? soundBytes = Uint8List(0);
+  Uint8List? soundBytes;
   final int _randomId = 100000 + Random().nextInt(100000);
 
   TextEditingController? _latitudeController;
@@ -199,7 +199,7 @@ class _NewEditStepState extends State<NewEditStep>
       if (response.statusCode != 200) {
         throw Exception(response.body.toString());
       }
-    } else {
+    } else if (_soundStatus == SoundStatus.none) {
       http.delete(
         Uri.parse('${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
         headers: <String, String>{

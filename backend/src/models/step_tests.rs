@@ -1,8 +1,8 @@
-use crate::{app::AppConfig, create_app};
+use crate::{auth::AppConfig, create_app};
 
 pub async fn step_test(
     pool: &r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
-    app_config: AppConfig,
+    app_config: &actix_web::web::Data<AppConfig>,
 ) {
     use crate::{do_test, do_test_extract_id};
     use actix_web::{

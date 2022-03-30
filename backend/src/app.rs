@@ -1,19 +1,6 @@
-#[derive(Clone)]
-pub struct AppConfig {
-    pub bearer_token: String,
-}
-
-impl AppConfig {
-    pub fn new(token: String) -> Self {
-        AppConfig {
-            bearer_token: token,
-        }
-    }
-}
-
 #[macro_export]
 macro_rules! create_app {
-    ($pool:expr, $app_config:expr) => {{
+    ($pool:expr, $app_data:expr) => {{
         use crate::models::{step, user};
         use actix_cors::Cors;
         use actix_web::{error, middleware, web, web::Data, App, HttpResponse};
@@ -28,7 +15,7 @@ macro_rules! create_app {
                             .into()
                     }),
             )
-            .app_data(web::Data::new($app_config))
+            .app_data(Data::clone($app_data))
             .wrap(Cors::permissive())
             .wrap(middleware::Logger::default())
             .service(

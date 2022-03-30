@@ -2,7 +2,20 @@ use actix_web::{http::header::HeaderValue, FromRequest, HttpRequest};
 
 use std::future::{ready, Ready};
 
-use crate::{app::AppConfig, errors::ServerError};
+use crate::errors::ServerError;
+
+#[derive(Clone)]
+pub struct AppConfig {
+    pub bearer_token: String,
+}
+
+impl AppConfig {
+    pub fn new(token: String) -> Self {
+        AppConfig {
+            bearer_token: token,
+        }
+    }
+}
 
 pub struct Authenticated;
 
@@ -121,7 +134,7 @@ mod extractor_tests {
         test, App, HttpResponse,
     };
 
-    use crate::app::AppConfig;
+    use crate::auth::AppConfig;
 
     use super::Authenticated;
 

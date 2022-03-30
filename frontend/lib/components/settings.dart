@@ -352,7 +352,9 @@ class SettingsField extends StatelessWidget {
             decoration: InputDecoration(labelText: tr(context, "token")),
             onChanged: (text) {
               App().prefs.token = text;
-              onChange!();
+              if (onChange != null) {
+                onChange!();
+              }
             },
             key: const Key("tokenField"),
           ),
