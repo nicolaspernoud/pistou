@@ -171,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
         body: (App().hasUser)
             ? Center(
                 child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(8.0),
                 child: FutureBuilder<Step?>(
                   future: _step,
                   builder: (context, snapshot) {
@@ -197,14 +197,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                 padding: const EdgeInsets.all(16.0),
                                 child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0),
-                                    child: Image.network(
-                                      '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
-                                      errorBuilder: (BuildContext context,
-                                          Object exception,
-                                          StackTrace? stackTrace) {
-                                        return const Text('-');
-                                      },
-                                      fit: BoxFit.contain,
+                                    child: InteractiveViewer(
+                                      panEnabled: true,
+                                      minScale: 1,
+                                      maxScale: 10,
+                                      child: Image.network(
+                                        '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
+                                        errorBuilder: (BuildContext context,
+                                            Object exception,
+                                            StackTrace? stackTrace) {
+                                          return const Text('-');
+                                        },
+                                        fit: BoxFit.cover,
+                                      ),
                                     )),
                               ),
                             ),
