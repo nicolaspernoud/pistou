@@ -4,7 +4,6 @@ use std::future::{ready, Ready};
 
 use crate::errors::ServerError;
 
-#[derive(Clone)]
 pub struct AppConfig {
     pub bearer_token: String,
 }

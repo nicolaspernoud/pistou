@@ -48,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    audioPlayer.setLoopMode(LoopMode.one);
     if (App().hasUser) {
       _getCurrentStep(false);
     } else {

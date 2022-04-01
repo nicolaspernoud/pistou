@@ -71,8 +71,8 @@ class _SettingsState extends State<Settings> {
               Slider(
                 value: App().prefs.soundSpeed,
                 max: 200,
-                min: 10,
-                divisions: 19,
+                min: 20,
+                divisions: 18,
                 label: App().prefs.soundSpeed.round().toString(),
                 onChanged: (double value) {
                   setState(() {

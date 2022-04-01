@@ -56,6 +56,7 @@ class _NewEditStepState extends State<NewEditStep>
   @override
   void initState() {
     super.initState();
+    audioPlayer.setLoopMode(LoopMode.one);
     mapController = MapController();
     if (widget.step.id > 0) {
       _imgFromServer(widget.step.id);
