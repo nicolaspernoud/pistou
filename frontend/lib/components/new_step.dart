@@ -439,22 +439,15 @@ class _NewEditStepState extends State<NewEditStep>
                               return Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  InkWell(
-                                    onTap: () {
-                                      _imgFrom(ImageSource.camera);
-                                    },
+                                  Flexible(
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      child: Container(
-                                        constraints: BoxConstraints(
-                                            maxHeight: 300,
-                                            maxWidth: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.75),
+                                      child: InkWell(
+                                        onTap: () {
+                                          _imgFrom(ImageSource.camera);
+                                        },
                                         child: Image.memory(
                                           snapshot.data!,
-                                          fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),

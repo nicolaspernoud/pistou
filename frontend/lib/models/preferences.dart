@@ -55,15 +55,6 @@ class Preferences with LocalFilePersister {
 
   String get userPassword => _userPassword;
 
-  int _soundSpeed = 100;
-
-  set soundSpeed(double v) {
-    _soundSpeed = v.round();
-    write();
-  }
-
-  double get soundSpeed => _soundSpeed.toDouble();
-
   bool _logEnabled = false;
 
   set logEnabled(bool v) {
@@ -97,7 +88,6 @@ class Preferences with LocalFilePersister {
     _userId = settingsMap['userId'];
     _userName = settingsMap['userName'];
     _userPassword = settingsMap['userPassword'];
-    _soundSpeed = settingsMap['soundSpeed'];
     _logEnabled = settingsMap['logEnabled'];
     _log = List<String>.from(settingsMap['log']);
   }
@@ -110,7 +100,6 @@ class Preferences with LocalFilePersister {
       'userId': _userId,
       'userName': _userName,
       'userPassword': _userPassword,
-      'soundSpeed': _soundSpeed,
       'logEnabled': _logEnabled,
       'log': _log
     };

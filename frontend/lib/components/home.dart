@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await audioPlayer.setUrl(url);
         setState(() {
           _hasSound = true;
-          audioPlayer.setSpeed(App().prefs.soundSpeed / 100.0);
+          audioPlayer.setSpeed(App().soundSpeed / 100.0);
           audioPlayer.play();
         });
       } catch (e) {
@@ -191,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                           ),
-                          Expanded(
+                          Flexible(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: ClipRRect(
@@ -207,7 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                           StackTrace? stackTrace) {
                                         return const Text('-');
                                       },
-                                      fit: BoxFit.cover,
                                     ),
                                   )),
                             ),
@@ -298,7 +297,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (audioPlayer.playing) {
         audioPlayer.stop();
       } else {
-        audioPlayer.setSpeed(App().prefs.soundSpeed / 100.0);
+        audioPlayer.setSpeed(App().soundSpeed / 100.0);
         audioPlayer.play();
       }
     });

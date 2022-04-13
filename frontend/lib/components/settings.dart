@@ -63,20 +63,20 @@ class _SettingsState extends State<Settings> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Text(
-                    tr(context, "sound_speed"),
+                    '${tr(context, "sound_speed")} (${App().soundSpeed.round()}%)',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               Slider(
-                value: App().prefs.soundSpeed,
+                value: App().soundSpeed,
                 max: 200,
                 min: 20,
                 divisions: 18,
-                label: App().prefs.soundSpeed.round().toString(),
+                label: App().soundSpeed.round().toString(),
                 onChanged: (double value) {
                   setState(() {
-                    App().prefs.soundSpeed = value;
+                    App().soundSpeed = value;
                   });
                 },
               ),
