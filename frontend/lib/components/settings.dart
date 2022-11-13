@@ -59,27 +59,6 @@ class SettingsState extends State<Settings> {
           child: ListView(
             children: [
               SettingsField(onboarding: false, onChange: () => setState(() {})),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    '${tr(context, "sound_speed")} (${App().soundSpeed.round()}%)',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              Slider(
-                value: App().soundSpeed,
-                max: 200,
-                min: 20,
-                divisions: 18,
-                label: App().soundSpeed.round().toString(),
-                onChanged: (double value) {
-                  setState(() {
-                    App().soundSpeed = value;
-                  });
-                },
-              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ElevatedButton(

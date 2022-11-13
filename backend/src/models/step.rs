@@ -1,12 +1,13 @@
 use actix_files::NamedFile;
 
-use actix_web::Result;
+use actix_web::{head, Result};
 use futures_util::StreamExt;
 use image::GenericImageView;
 use std::{
     cmp::Ordering,
     fs::{create_dir_all, remove_file, File},
     io::Write,
+    path::Path,
 };
 
 use image::imageops::FilterType::Lanczos3;
@@ -145,7 +146,7 @@ pub async fn delete(
     })
     .await??;
     let _ = web::block(move || remove_file(image_filename(oid))).await;
-    let _ = web::block(move || remove_file(sound_filename(oid))).await;
+    let _ = web::block(move || remove_file(media_filename(oid))).await;
     Ok(HttpResponse::Ok().body(format!("Deleted object with id: {}", oid)))
 }
 
@@ -241,19 +242,19 @@ fn image_filename(id: i32) -> String {
 }
 
 ///////////////////////
-// SOUNDS MANAGEMENT //
+// MEDIAS MANAGEMENT //
 ///////////////////////
 
-const SOUNDS_PATH: &str = "data/items/sounds";
+const MEDIAS_PATH: &str = "data/items/medias";
 
-#[post("/sounds/{oid}")]
-async fn upload_sound(
+#[post("/medias/{oid}")]
+async fn upload_media(
     oid: web::Path<i32>,
     mut body: web::Payload,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
-    create_dir_all(SOUNDS_PATH)?;
-    let filename = sound_filename(*oid);
+    create_dir_all(MEDIAS_PATH)?;
+    let filename = media_filename(*oid);
     let mut file = File::create(&filename)?;
     while let Some(item) = body.next().await {
         file.write(&item?)?;
@@ -261,14 +262,24 @@ async fn upload_sound(
     Ok(HttpResponse::Ok().body(filename))
 }
 
-#[get("/sounds/{oid}")]
-async fn retrieve_sound(oid: web::Path<i32>) -> Result<NamedFile> {
-    Ok(NamedFile::open(sound_filename(*oid))?)
+#[get("/medias/{oid}")]
+async fn retrieve_media(oid: web::Path<i32>) -> Result<NamedFile> {
+    Ok(NamedFile::open(media_filename(*oid))?)
 }
 
-#[delete("/sounds/{oid}")]
-async fn delete_sound(oid: web::Path<i32>, _: Authenticated) -> Result<HttpResponse, ServerError> {
-    let d = web::block(move || remove_file(sound_filename(*oid))).await?;
+#[head("/medias/{oid}")]
+async fn check_media(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
+    if Path::new(&media_filename(*oid)).exists() {
+        Ok(HttpResponse::Ok().body("File exists"))
+    } else {
+        let res = HttpResponse::NotFound().body("File does not exist");
+        Ok(res)
+    }
+}
+
+#[delete("/medias/{oid}")]
+async fn delete_media(oid: web::Path<i32>, _: Authenticated) -> Result<HttpResponse, ServerError> {
+    let d = web::block(move || remove_file(media_filename(*oid))).await?;
     if let Ok(_) = d {
         Ok(HttpResponse::Ok().body("File deleted"))
     } else {
@@ -277,6 +288,6 @@ async fn delete_sound(oid: web::Path<i32>, _: Authenticated) -> Result<HttpRespo
     }
 }
 
-fn sound_filename(id: i32) -> String {
-    format!("{path}/{id}.mp3", path = SOUNDS_PATH, id = id)
+fn media_filename(id: i32) -> String {
+    format!("{path}/{id}", path = MEDIAS_PATH, id = id)
 }

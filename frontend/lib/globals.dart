@@ -37,14 +37,6 @@ class App {
     prefs.clearLog();
   }
 
-  int _soundSpeed = 100;
-
-  set soundSpeed(double v) {
-    _soundSpeed = v.round();
-  }
-
-  double get soundSpeed => _soundSpeed.toDouble();
-
   Future init() async {
     prefs = Preferences();
     if (kIsWeb || !Platform.environment.containsKey('FLUTTER_TEST')) {

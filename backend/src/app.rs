@@ -33,7 +33,8 @@ macro_rules! create_app {
                 web::scope("/api/steps")
                     .service(step::read)
                     .service(step::retrieve_image)
-                    .service(step::retrieve_sound)
+                    .service(step::retrieve_media)
+                    .service(step::check_media)
                     .service(step::read_all)
                     .service(step::create)
                     .service(step::update)
@@ -41,8 +42,8 @@ macro_rules! create_app {
                     .service(step::delete)
                     .service(step::upload_image)
                     .service(step::delete_image)
-                    .service(step::upload_sound)
-                    .service(step::delete_sound),
+                    .service(step::upload_media)
+                    .service(step::delete_media),
             )
             .service(actix_files::Files::new("/", "./web").index_file("index.html"))
     }};

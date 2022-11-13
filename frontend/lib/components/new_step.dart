@@ -2,7 +2,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Step;
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:pistou/globals.dart';
 import 'package:pistou/models/crud.dart';
 import 'package:pistou/models/new_position.dart';
@@ -15,8 +14,9 @@ import 'package:latlong2/latlong.dart';
 import 'dart:math';
 
 import '../i18n.dart';
+import 'media_player.dart';
 
-enum SoundStatus {
+enum MediaStatus {
   none,
   available,
   loading,
@@ -42,9 +42,8 @@ class NewEditStepState extends State<NewEditStep>
   late bool isExisting;
   Future<Uint8List?>? imageBytes;
   bool _submitting = false;
-  AudioPlayer audioPlayer = AudioPlayer();
-  SoundStatus _soundStatus = SoundStatus.none;
-  Uint8List? soundBytes;
+  MediaStatus _mediaStatus = MediaStatus.none;
+  Uint8List? mediaBytes;
   final int _randomId = 100000 + Random().nextInt(100000);
 
   TextEditingController? _latitudeController;
@@ -54,29 +53,27 @@ class NewEditStepState extends State<NewEditStep>
   @override
   void initState() {
     super.initState();
-    audioPlayer.setLoopMode(LoopMode.one);
     mapController = MapController();
     if (widget.step.id > 0) {
       _imgFromServer(widget.step.id);
-      _setPlayerUrl(widget.step.id);
+      _checkHasMedia(widget.step.id);
     }
   }
 
-  Future<void> _setPlayerUrl(int id) async {
-    // Dummy loading to force cache flush
+  String get mediaUrl {
+    var id = widget.step.id > 0 ? widget.step.id : _randomId;
+    return '${App().prefs.hostname}/api/steps/medias/${id.toString()}';
+  }
+
+  Future<void> _checkHasMedia(int id) async {
     try {
-      await audioPlayer.setUrl('${App().prefs.hostname}/api/steps/sounds/dummy',
-          preload: false);
-    } on Exception catch (_) {}
-    try {
-      await audioPlayer
-          .setUrl('${App().prefs.hostname}/api/steps/sounds/${id.toString()}');
+      await http.head(Uri.parse(mediaUrl));
       setState(() {
-        _soundStatus = SoundStatus.available;
+        _mediaStatus = MediaStatus.available;
       });
     } catch (e) {
       setState(() {
-        _soundStatus = SoundStatus.none;
+        _mediaStatus = MediaStatus.none;
       });
     }
   }
@@ -167,40 +164,40 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  _soundFrom() async {
-    var tmpStatus = _soundStatus;
+  _mediaFrom() async {
+    var tmpStatus = _mediaStatus;
     setState(() {
-      _soundStatus = SoundStatus.loading;
+      _mediaStatus = MediaStatus.loading;
     });
-    FilePickerResult? audioFile =
+    FilePickerResult? mediaFile =
         await FilePicker.platform.pickFiles(withData: true);
-    if (audioFile != null) {
-      soundBytes = audioFile.files.first.bytes!;
+    if (mediaFile != null) {
+      mediaBytes = mediaFile.files.first.bytes!;
       var id = widget.step.id > 0 ? widget.step.id : _randomId;
-      await _soundToServer(id);
-      _setPlayerUrl(id);
+      await _mediaToServer(id);
+      _checkHasMedia(id);
     } else {
       setState(() {
-        _soundStatus = tmpStatus;
+        _mediaStatus = tmpStatus;
       });
     }
   }
 
-  Future<void> _soundToServer(int id) async {
-    if (soundBytes != null) {
+  Future<void> _mediaToServer(int id) async {
+    if (mediaBytes != null) {
       final response = await http.post(
           Uri.parse(
-              '${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
+              '${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
           headers: <String, String>{
             'Authorization': "Bearer ${App().prefs.token}"
           },
-          body: soundBytes);
+          body: mediaBytes);
       if (response.statusCode != 200) {
         throw Exception(response.body.toString());
       }
-    } else if (_soundStatus == SoundStatus.none) {
+    } else if (_mediaStatus == MediaStatus.none) {
       http.delete(
-        Uri.parse('${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
+        Uri.parse('${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer ${App().prefs.token}"
         },
@@ -212,7 +209,6 @@ class NewEditStepState extends State<NewEditStep>
   void dispose() {
     _latitudeController?.dispose();
     _longitudeController?.dispose();
-    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -224,7 +220,7 @@ class NewEditStepState extends State<NewEditStep>
         TextEditingController(text: emptyIfZero(widget.step.longitude));
     return WillPopScope(
       onWillPop: () async {
-        await _deleteTemporarySound();
+        await _deleteTemporarymedia();
         return true;
       },
       child: Scaffold(
@@ -238,7 +234,7 @@ class NewEditStepState extends State<NewEditStep>
                       icon: const Icon(Icons.delete_forever),
                       onPressed: () async {
                         await widget.crud.delete(widget.step.id);
-                        await _deleteTemporarySound();
+                        await _deleteTemporarymedia();
                         if (!mounted) return;
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -484,51 +480,42 @@ class NewEditStepState extends State<NewEditStep>
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          tr(context, "sound"),
+                          tr(context, "media"),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                    _soundStatus == SoundStatus.loading
+                    _mediaStatus == MediaStatus.loading
                         ? const Padding(
                             padding: EdgeInsets.all(10.0),
                             child: Center(child: CircularProgressIndicator()),
                           )
                         : Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (_soundStatus == SoundStatus.available)
-                                    IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            if (audioPlayer.playing) {
-                                              audioPlayer.stop();
-                                            } else {
-                                              audioPlayer.play();
-                                            }
-                                          });
-                                        },
-                                        icon: audioPlayer.playing
-                                            ? const Icon(Icons.pause)
-                                            : const Icon(Icons.play_arrow)),
-                                  IconButton(
-                                      onPressed: () {
-                                        _soundFrom();
-                                      },
-                                      icon: const Icon(Icons.upload_file)),
-                                  if (_soundStatus == SoundStatus.available)
-                                    IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            audioPlayer.stop();
-                                            soundBytes = null;
-                                            _soundStatus = SoundStatus.none;
-                                          });
-                                        },
-                                        icon: const Icon(Icons.clear))
-                                ]),
+                            child: Column(
+                              children: [
+                                if (_mediaStatus == MediaStatus.available)
+                                  MediaPlayer(uri: mediaUrl),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      IconButton(
+                                          onPressed: () {
+                                            _mediaFrom();
+                                          },
+                                          icon: const Icon(Icons.upload_file)),
+                                      if (_mediaStatus == MediaStatus.available)
+                                        IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                mediaBytes = null;
+                                                _mediaStatus = MediaStatus.none;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.clear))
+                                    ]),
+                              ],
+                            ),
                           ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -548,7 +535,7 @@ class NewEditStepState extends State<NewEditStep>
                               curve: Curves.linear,
                             ).flipped,
                             duration: const Duration(milliseconds: 500),
-                            child: _soundStatus == SoundStatus.loading
+                            child: _mediaStatus == MediaStatus.loading
                                 ? const SizedBox.shrink()
                                 : !_submitting
                                     ? ElevatedButton(
@@ -567,14 +554,14 @@ class NewEditStepState extends State<NewEditStep>
                                                     .update(widget.step);
                                                 await _imgToServer(
                                                     widget.step.id);
-                                                await _soundToServer(
+                                                await _mediaToServer(
                                                     widget.step.id);
                                               } else {
                                                 var t = await widget.crud
                                                     .create(widget.step);
                                                 await _imgToServer(t.id);
-                                                await _soundToServer(t.id);
-                                                await _deleteTemporarySound();
+                                                await _mediaToServer(t.id);
+                                                await _deleteTemporarymedia();
                                               }
                                               // Do nothing on TypeError as Create respond with a null id
                                             } catch (e) {
@@ -619,10 +606,10 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  _deleteTemporarySound() {
+  _deleteTemporarymedia() {
     http.delete(
         Uri.parse(
-            '${App().prefs.hostname}/api/steps/sounds/${_randomId.toString()}'),
+            '${App().prefs.hostname}/api/steps/medias/${_randomId.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer ${App().prefs.token}"
         });

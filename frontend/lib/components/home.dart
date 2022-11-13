@@ -1,14 +1,13 @@
 import 'dart:async';
-
-import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart' hide Step;
+import 'package:pistou/components/media_player.dart';
 import 'package:pistou/models/advance_crud.dart';
 import 'package:pistou/models/answer.dart';
 import 'package:pistou/models/step.dart';
 import 'package:pistou/models/crud.dart';
 import 'package:pistou/models/user.dart';
-
 import 'package:pistou/globals.dart';
+import 'package:http/http.dart' as http;
 import '../i18n.dart';
 import 'settings.dart';
 
@@ -29,8 +28,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Future<Step>? _step;
-  bool _hasSound = false;
-  AudioPlayer audioPlayer = AudioPlayer();
+  bool _hasMedia = false;
   Answer answer = Answer(
       password: App().prefs.userPassword,
       latitude: 0.0,
@@ -48,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    audioPlayer.setLoopMode(LoopMode.one);
     if (App().hasUser) {
       _getCurrentStep(false);
     } else {
@@ -65,20 +62,16 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _answerController.text = "";
         _step = Future.value(s);
-        audioPlayer.stop();
-        _hasSound = false;
+        _hasMedia = false;
       });
-      String url =
-          '${App().prefs.hostname}/api/steps/sounds/${s.id.toString()}';
       try {
-        await audioPlayer.setUrl(url);
+        await http.head(Uri.parse(
+            '${App().prefs.hostname}/api/steps/medias/${s.id.toString()}'));
         setState(() {
-          _hasSound = true;
-          audioPlayer.setSpeed(App().soundSpeed / 100.0);
-          audioPlayer.play();
+          _hasMedia = true;
         });
       } catch (e) {
-        _hasSound = false;
+        _hasMedia = false;
       }
     } else {
       // Case of unrecognized user
@@ -159,7 +152,6 @@ class _MyHomePageState extends State<MyHomePage> {
             IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () async {
-                  audioPlayer.stop();
                   await Navigator.push(context,
                       MaterialPageRoute<void>(builder: (BuildContext context) {
                     return Settings(
@@ -213,14 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   )),
                             ),
                           ),
-                          if (_hasSound)
-                            IconButton(
-                                onPressed: () {
-                                  play();
-                                },
-                                icon: audioPlayer.playing
-                                    ? const Icon(Icons.pause)
-                                    : const Icon(Icons.play_arrow)),
+                          if (_hasMedia)
+                            MediaPlayer(
+                                key: UniqueKey(),
+                                uri:
+                                    '${App().prefs.hostname}/api/steps/medias/${snapshot.data!.id.toString()}'),
                           if (!snapshot.data!.isEnd) ...[
                             Center(
                               child: Padding(
@@ -292,16 +281,5 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ))
             : null);
-  }
-
-  play() async {
-    setState(() {
-      if (audioPlayer.playing) {
-        audioPlayer.stop();
-      } else {
-        audioPlayer.setSpeed(App().soundSpeed / 100.0);
-        audioPlayer.play();
-      }
-    });
   }
 }

@@ -270,7 +270,7 @@ pub async fn step_test(
 
     // Upload a sound for this step (we use the same image file, as we only want to test the upload, retrieving, and deletion)
     let img_body = std::fs::read("test_img.jpg").unwrap();
-    let req = test::TestRequest::with_uri(format!("/api/steps/sounds/{}", id).as_str())
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
         .method(Method::POST)
         .insert_header(("Authorization", "Bearer 0101"))
         .set_payload(img_body.clone())
@@ -278,8 +278,15 @@ pub async fn step_test(
     let resp = test::call_service(&mut app, req).await;
     assert_eq!(resp.status(), StatusCode::OK);
 
+    // Check if the sound exists
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
+        .method(Method::HEAD)
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+
     // Retrieve the sound
-    let req = test::TestRequest::with_uri(format!("/api/steps/sounds/{}", id).as_str())
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
         .method(Method::GET)
         .to_request();
     let resp = test::call_service(&mut app, req).await;
@@ -305,8 +312,15 @@ pub async fn step_test(
     let resp = test::call_service(&mut app, req).await;
     assert_eq!(resp.status(), StatusCode::NOT_FOUND);
 
+    // Check that the sound does not exist
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
+        .method(Method::HEAD)
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+
     // Check that the sound is gone too
-    let req = test::TestRequest::with_uri(format!("/api/steps/sounds/{}", id).as_str())
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
         .method(Method::GET)
         .to_request();
     let resp = test::call_service(&mut app, req).await;
