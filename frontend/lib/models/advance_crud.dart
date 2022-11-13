@@ -15,7 +15,7 @@ class AdvanceCrud {
 
   final String route = "user";
 
-  String get base => App().prefs.hostname + "/api";
+  String get base => "${App().prefs.hostname}/api";
   String get token => App().prefs.token;
 
   AdvanceCrud() {
@@ -28,7 +28,7 @@ class AdvanceCrud {
 
   Future<AdvanceCrudResponse> getCurrentStep(context) async {
     try {
-      var base = App().prefs.hostname + "/api";
+      var base = "${App().prefs.hostname}/api";
       var route = "users/${App().prefs.userId}/current_step";
       final response =
           await client.get(Uri.parse('$base/$route'), headers: <String, String>{
@@ -52,7 +52,7 @@ class AdvanceCrud {
       answer.latitude = position!.latitude;
       answer.longitude = position.longitude;
       answer.password = App().prefs.userPassword;
-      var base = App().prefs.hostname + "/api";
+      var base = "${App().prefs.hostname}/api";
       var route = "users/${App().prefs.userId}/advance";
       final response = await client.post(Uri.parse('$base/$route'),
           headers: <String, String>{

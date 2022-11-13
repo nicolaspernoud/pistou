@@ -18,11 +18,11 @@ class Answer {
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['password'] = password;
-    _data['latitude'] = latitude;
-    _data['longitude'] = longitude;
-    _data['answer'] = answer;
-    return _data;
+    final data = <String, dynamic>{};
+    data['password'] = password;
+    data['latitude'] = latitude;
+    data['longitude'] = longitude;
+    data['answer'] = answer;
+    return data;
   }
 }

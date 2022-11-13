@@ -39,7 +39,7 @@ jobs:
         with:
           java-version: "12.x"
       - name: Set up Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: "stable"
       - name: Decode android/key.jks

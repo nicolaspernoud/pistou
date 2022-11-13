@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (App().hasUser) {
       _getCurrentStep(false);
     } else {
-      WidgetsBinding.instance?.addPostFrameCallback(openSettings);
+      WidgetsBinding.instance.addPostFrameCallback(openSettings);
     }
   }
 
@@ -84,9 +84,10 @@ class _MyHomePageState extends State<MyHomePage> {
       // Case of unrecognized user
       if (!advance) {
         App().removeUser();
-        WidgetsBinding.instance?.addPostFrameCallback(openSettings);
+        WidgetsBinding.instance.addPostFrameCallback(openSettings);
       }
     }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(stepAndOutcome.outcome),
@@ -95,19 +96,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> openSettings(_) async {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     await showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Text(tr(context, "settings")),
         content: SizedBox(
-          child: SettingsField(onboarding: true, formKey: _formKey),
           height: 250,
+          child: SettingsField(onboarding: true, formKey: formKey),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              if (_formKey.currentState!.validate()) {
+              if (formKey.currentState!.validate()) {
                 // Create an user with the given name and password
                 var user = await widget.userCrud.create(User(
                     name: App().prefs.userName,
@@ -115,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     currentStep: 1,
                     id: 0));
                 App().prefs.userId = user.id;
+                if (!mounted) return;
                 Navigator.pop(context, 'OK');
               }
             },

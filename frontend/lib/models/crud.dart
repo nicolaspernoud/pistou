@@ -60,7 +60,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
 
   final String route = routeByType(T);
 
-  String get base => App().prefs.hostname + "/api";
+  String get base => "${App().prefs.hostname}/api";
   String get token => App().prefs.token;
 
   APICrud() {
@@ -78,7 +78,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         Uri.parse('$base/$route'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': "Bearer " + token
+          'Authorization': "Bearer $token"
         },
         body: jsonEncode(val),
       );
@@ -96,7 +96,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
       final response = await client.get(
         Uri.parse('$base/$route/${id.toString()}'),
         headers: <String, String>{
-          'Authorization': "Bearer " + token,
+          'Authorization': "Bearer $token",
           'Content-Type': 'application/json'
         },
       );
@@ -117,7 +117,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         queryFilter == null
             ? Uri.parse('$base/$route')
             : Uri.parse('$base/$route?$queryFilter'),
-        headers: <String, String>{'Authorization': "Bearer " + token},
+        headers: <String, String>{'Authorization': "Bearer $token"},
       );
       if (response.statusCode == 200) {
         final List t = json.decode(utf8.decode(response.bodyBytes));
@@ -141,7 +141,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         Uri.parse('$base/$route/${val.id}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': "Bearer " + token
+          'Authorization': "Bearer $token"
         },
         body: jsonEncode(val),
       );
@@ -158,7 +158,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
     try {
       final response = await client.delete(
         Uri.parse('$base/$route/$id'),
-        headers: <String, String>{'Authorization': "Bearer " + token},
+        headers: <String, String>{'Authorization': "Bearer $token"},
       );
       if (response.statusCode != 200) {
         throw Exception(response.body.toString());

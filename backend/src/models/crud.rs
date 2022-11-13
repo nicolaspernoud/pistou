@@ -17,10 +17,10 @@ macro_rules! crud_read {
             pool: web::Data<DbPool>,
             oid: web::Path<i32>,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             let object = web::block(move || {
                 use crate::schema::$table::dsl::*;
-                $table.filter(id.eq(*oid)).first::<$model>(&conn)
+                $table.filter(id.eq(*oid)).first::<$model>(&mut conn)
             })
             .await??;
             Ok(HttpResponse::Ok().json(object))
@@ -36,10 +36,10 @@ macro_rules! crud_read_all {
             pool: web::Data<DbPool>,
             _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             let object = web::block(move || {
                 use crate::schema::$table::dsl::*;
-                $table.order(id.asc()).load::<$model>(&conn)
+                $table.order(id.asc()).load::<$model>(&mut conn)
             })
             .await??;
             Ok(HttpResponse::Ok().json(object))
@@ -56,18 +56,18 @@ macro_rules! crud_create {
             mut o: web::Json<$inmodel>,
             _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             let created_o: Result<$outmodel, ServerError> = web::block(move || {
                 $(
                     // Check that parent for our object exists
-                    crate::schema::$parent_table::dsl::$parent_table.find(o.$parent_table_id).first::<$parent_model>(&conn)?;
+                    crate::schema::$parent_table::dsl::$parent_table.find(o.$parent_table_id).first::<$parent_model>(&mut conn)?;
                 )*
                 use crate::schema::$table::dsl::*;
                 o.trim()?;
                 diesel::insert_into($table)
                     .values(&*o)
-                    .execute(&conn)?;
-                let o = $table.order(id.desc()).first::<$outmodel>(&conn)?;
+                    .execute(&conn)?mut ;
+                let o = $table.order(id.desc()).first::<$outmodel>(&mut conn)?;
                 Ok(o)
             })
             .await?;
@@ -86,11 +86,11 @@ macro_rules! crud_update {
             oid: web::Path<i32>,
             _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             let put_o: Result<$model, ServerError> = web::block(move || {
                 $(
                     // Check that parent for our object exists
-                    crate::schema::$parent_table::dsl::$parent_table.find(o.$parent_table_id).first::<$parent_model>(&conn)?;
+                    crate::schema::$parent_table::dsl::$parent_table.find(o.$parent_table_id).first::<$parent_model>(&mut conn)?;
                 )*
                 use crate::schema::$table::dsl::*;
                 o.trim()?;
@@ -98,8 +98,8 @@ macro_rules! crud_update {
                 diesel::update($table)
                     .filter(id.eq(*oid))
                     .set(&*o)
-                    .execute(&conn)?;
-                let o = $table.filter(id.eq(*oid)).first::<$model>(&conn)?;
+                    .execute(&conn)?mut ;
+                let o = $table.filter(id.eq(*oid)).first::<$model>(&mut conn)?;
                 Ok(o)
             })
             .await?;
@@ -117,11 +117,13 @@ macro_rules! crud_delete {
             oid: web::Path<i32>,
             _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             let oid = *oid;
             web::block(move || {
                 use crate::schema::$table::dsl::*;
-                let deleted = diesel::delete($table).filter(id.eq(oid)).execute(&conn)?;
+                let deleted = diesel::delete($table)
+                    .filter(id.eq(oid))
+                    .execute(&mut conn)?;
                 match deleted {
                     0 => Err(diesel::result::Error::NotFound),
                     _ => Ok(deleted),
@@ -141,10 +143,10 @@ macro_rules! crud_delete_all {
             pool: web::Data<DbPool>,
             _: Authenticated,
         ) -> Result<HttpResponse, ServerError> {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
             web::block(move || {
                 use crate::schema::$table::dsl::*;
-                let deleted = diesel::delete($table).execute(&conn)?;
+                let deleted = diesel::delete($table).execute(&mut conn)?;
                 match deleted {
                     0 => Err(diesel::result::Error::NotFound),
                     _ => Ok(deleted),

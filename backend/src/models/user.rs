@@ -40,7 +40,7 @@ macro_rules! trim {
 #[derive(
     Debug, Clone, Serialize, Deserialize, Queryable, Insertable, AsChangeset, Identifiable,
 )]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct User {
     pub id: i32,
     pub name: String,
@@ -53,7 +53,7 @@ impl User {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct NewUser {
     pub name: String,
     pub password: String,
@@ -69,12 +69,12 @@ pub async fn create(
     pool: web::Data<DbPool>,
     mut o: web::Json<NewUser>,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let created_o: Result<User, ServerError> = web::block(move || {
         use crate::schema::users::dsl::*;
         o.trim()?;
-        diesel::insert_into(users).values(&*o).execute(&conn)?;
-        let o = users.order(id.desc()).first::<User>(&conn)?;
+        diesel::insert_into(users).values(&*o).execute(&mut conn)?;
+        let o = users.order(id.desc()).first::<User>(&mut conn)?;
         Ok(o)
     })
     .await?;
@@ -91,12 +91,12 @@ pub async fn update(
     oid: web::Path<i32>,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let put_o: Result<User, ServerError> = web::block(move || {
         use crate::schema::users::dsl::*;
 
         // Do not update password if the given password is empty
-        let u = users.filter(id.eq(*oid)).first::<User>(&conn)?;
+        let u = users.filter(id.eq(*oid)).first::<User>(&mut conn)?;
         if o.password.is_empty() {
             o.password = u.password;
             o.name = o.name.trim().to_string();
@@ -107,9 +107,9 @@ pub async fn update(
         diesel::update(users)
             .filter(id.eq(*oid))
             .set(&*o)
-            .execute(&conn)?;
+            .execute(&mut conn)?;
 
-        let u = users.filter(id.eq(*oid)).first::<User>(&conn)?;
+        let u = users.filter(id.eq(*oid)).first::<User>(&mut conn)?;
         Ok(u)
     })
     .await?;
@@ -144,13 +144,13 @@ pub async fn advance(
     oid: web::Path<i32>,
     answer: web::Json<Answer>,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let step = web::block(move || {
         use crate::schema::steps::dsl::rank;
         use crate::schema::steps::dsl::steps;
         use crate::schema::users::dsl::*;
         // Get the user with that id
-        let u = users.find(*oid).first::<User>(&conn)?;
+        let u = users.find(*oid).first::<User>(&mut conn)?;
 
         // Check if the given password is correct
         let parsed_hash = PasswordHash::new(&u.password).map_err(|_| {
@@ -166,7 +166,9 @@ pub async fn advance(
         }
 
         // Get the user's current step
-        let s = steps.filter(rank.eq(u.current_step)).first::<Step>(&conn)?;
+        let s = steps
+            .filter(rank.eq(u.current_step))
+            .first::<Step>(&mut conn)?;
 
         // Check that the location is close enough
         let dist = get_dist(answer.latitude, answer.longitude, s.latitude, s.longitude);
@@ -213,12 +215,12 @@ pub async fn advance(
         // If so, search the next step...
         let s = steps
             .filter(rank.eq(u.current_step + 1))
-            .first::<Step>(&conn)?;
+            .first::<Step>(&mut conn)?;
         // ... update the user's step if the step exists...
         diesel::update(users)
             .filter(id.eq(*oid))
             .set(current_step.eq(s.rank))
-            .execute(&conn)?;
+            .execute(&mut conn)?;
         // ... and return the step
         Ok(s)
     })
@@ -232,15 +234,18 @@ pub async fn current_step(
     pool: web::Data<DbPool>,
     oid: web::Path<i32>,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let step = web::block(move || {
         use crate::schema::steps::dsl::rank;
         use crate::schema::steps::dsl::steps;
         use crate::schema::users::dsl::*;
         // Get the user with that id
-        let u = users.find(*oid).first::<User>(&conn)?;
+        let u = users.find(*oid).first::<User>(&mut conn)?;
         // ...and respond with his current step
-        match steps.filter(rank.eq(u.current_step)).first::<Step>(&conn) {
+        match steps
+            .filter(rank.eq(u.current_step))
+            .first::<Step>(&mut conn)
+        {
             Ok(s) => Ok(s),
             Err(e) => Err(e),
         }

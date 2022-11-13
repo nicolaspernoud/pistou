@@ -4,9 +4,8 @@ import 'package:pistou/models/step.dart';
 import 'package:pistou/models/user.dart';
 import 'package:pistou/models/crud.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
-import 'package:url_launcher/url_launcher.dart';
-
 import 'package:pistou/globals.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../i18n.dart';
 import 'new_user.dart';
 
@@ -17,10 +16,10 @@ class Settings extends StatefulWidget {
       : super(key: key);
 
   @override
-  _SettingsState createState() => _SettingsState();
+  SettingsState createState() => SettingsState();
 }
 
-class _SettingsState extends State<Settings> {
+class SettingsState extends State<Settings> {
   String _logContent = "";
   bool _logEnabled = App().prefs.logEnabled;
   var redrawUsers = Object();
@@ -49,6 +48,7 @@ class _SettingsState extends State<Settings> {
               onPressed: () async {
                 await widget.usersCrud.read();
                 setState(() {});
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(tr(context, "users_refreshed"))));
               })
@@ -84,8 +84,8 @@ class _SettingsState extends State<Settings> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ElevatedButton(
                   onPressed: () async {
-                    await canLaunch(_url)
-                        ? await launch(_url)
+                    await canLaunchUrlString(_url)
+                        ? await launchUrlString(_url)
                         : throw 'Could not launch $_url';
                   },
                   child: Padding(
@@ -183,9 +183,8 @@ class _SettingsState extends State<Settings> {
                                         ListTile(
                                           leading: const Icon(
                                               Icons.not_listed_location),
-                                          title: Text(a.rank.toString() +
-                                              " - " +
-                                              a.locationHint),
+                                          title: Text(
+                                              "${a.rank} - ${a.locationHint}"),
                                           subtitle: Text(a.question),
                                         ),
                                       ],

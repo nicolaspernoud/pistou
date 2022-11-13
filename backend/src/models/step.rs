@@ -29,17 +29,9 @@ macro_rules! trim {
 }
 
 #[derive(
-    Debug,
-    Clone,
-    Serialize,
-    Deserialize,
-    Queryable,
-    Insertable,
-    AsChangeset,
-    Identifiable,
-    Associations,
+    Debug, Clone, Serialize, Deserialize, Queryable, Insertable, AsChangeset, Identifiable,
 )]
-#[table_name = "steps"]
+#[diesel(table_name = steps)]
 pub struct Step {
     pub id: i32,
     pub rank: i32,
@@ -54,7 +46,7 @@ pub struct Step {
 }
 
 fn rerank(
-    conn: &r2d2::PooledConnection<ConnectionManager<SqliteConnection>>,
+    conn: &mut r2d2::PooledConnection<ConnectionManager<SqliteConnection>>,
     priority_id: Option<(i32, Ordering)>,
 ) -> Result<(), diesel::result::Error> {
     use crate::schema::steps::dsl::*;
@@ -93,7 +85,7 @@ impl Step {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
-#[table_name = "steps"]
+#[diesel(table_name = steps)]
 pub struct NewStep {
     pub rank: i32,
     pub latitude: f64,
@@ -118,15 +110,15 @@ pub async fn create(
     mut o: web::Json<NewStep>,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let s = web::block(move || {
         use crate::schema::steps::dsl::*;
         o.trim();
-        diesel::insert_into(steps).values(&*o).execute(&conn)?;
+        diesel::insert_into(steps).values(&*o).execute(&mut conn)?;
         // Renumber the steps
-        let s = steps.order(id.desc()).first::<Step>(&conn)?;
-        rerank(&conn, Some((s.id, Ordering::Less)))?;
-        steps.order(id.desc()).first::<Step>(&conn)
+        let s = steps.order(id.desc()).first::<Step>(&mut conn)?;
+        rerank(&mut conn, Some((s.id, Ordering::Less)))?;
+        steps.order(id.desc()).first::<Step>(&mut conn)
     })
     .await??;
     Ok(HttpResponse::Created().json(s))
@@ -138,12 +130,14 @@ pub async fn delete(
     oid: web::Path<i32>,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     let oid = *oid;
     web::block(move || {
         use crate::schema::steps::dsl::*;
-        let deleted = diesel::delete(steps).filter(id.eq(oid)).execute(&conn)?;
-        rerank(&conn, None)?;
+        let deleted = diesel::delete(steps)
+            .filter(id.eq(oid))
+            .execute(&mut conn)?;
+        rerank(&mut conn, None)?;
         match deleted {
             0 => Err(diesel::result::Error::NotFound),
             _ => Ok(deleted),
@@ -162,12 +156,12 @@ pub async fn update(
     oid: web::Path<i32>,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     o.trim();
     let put_o = web::block(move || {
         use crate::schema::steps::dsl::*;
         // Get the initial rank to work out the ordering of the
-        let initial_rank = steps.filter(id.eq(*oid)).first::<Step>(&conn)?.rank;
+        let initial_rank = steps.filter(id.eq(*oid)).first::<Step>(&mut conn)?.rank;
         let ordering = if o.rank > initial_rank {
             Ordering::Greater
         } else {
@@ -177,9 +171,9 @@ pub async fn update(
         diesel::update(steps)
             .filter(id.eq(*oid))
             .set(&*o)
-            .execute(&conn)?;
-        rerank(&conn, Some((*oid, ordering)))?;
-        steps.filter(id.eq(*oid)).first::<Step>(&conn)
+            .execute(&mut conn)?;
+        rerank(&mut conn, Some((*oid, ordering)))?;
+        steps.filter(id.eq(*oid)).first::<Step>(&mut conn)
     })
     .await??;
     Ok(HttpResponse::Ok().json(put_o))

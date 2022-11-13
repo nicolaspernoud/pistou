@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Step;
@@ -31,12 +29,12 @@ class NewEditStep extends StatefulWidget {
       : super(key: key);
 
   @override
-  _NewEditStepState createState() => _NewEditStepState();
+  NewEditStepState createState() => NewEditStepState();
 }
 
 final doubleOnly = RegExp(r'^(?:0|[1-9][0-9]*)(?:\.[0-9]*)?$');
 
-class _NewEditStepState extends State<NewEditStep>
+class NewEditStepState extends State<NewEditStep>
     with TickerProviderStateMixin {
   // ignore: constant_identifier_names
   static const JPG_IMAGE_QUALITY = 80;
@@ -84,11 +82,11 @@ class _NewEditStepState extends State<NewEditStep>
   }
 
   void _animatedMapMove(LatLng destLocation) {
-    final _latTween = Tween<double>(
+    final latTween = Tween<double>(
         begin: mapController.center.latitude, end: destLocation.latitude);
-    final _lngTween = Tween<double>(
+    final lngTween = Tween<double>(
         begin: mapController.center.longitude, end: destLocation.longitude);
-    final _zoomTween =
+    final zoomTween =
         Tween<double>(begin: mapController.zoom, end: mapController.zoom + 1);
     var controller = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
@@ -97,8 +95,8 @@ class _NewEditStepState extends State<NewEditStep>
 
     controller.addListener(() {
       mapController.move(
-          LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)),
-          _zoomTween.evaluate(animation));
+          LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+          zoomTween.evaluate(animation));
     });
 
     animation.addStatusListener((status) {
@@ -141,7 +139,7 @@ class _NewEditStepState extends State<NewEditStep>
           Uri.parse(
               '${App().prefs.hostname}/api/steps/images/${id.toString()}'),
           headers: <String, String>{
-            'Authorization': "Bearer " + App().prefs.token
+            'Authorization': "Bearer ${App().prefs.token}"
           },
           body: img);
       if (response.statusCode != 200) {
@@ -151,7 +149,7 @@ class _NewEditStepState extends State<NewEditStep>
       await http.delete(
         Uri.parse('${App().prefs.hostname}/api/steps/images/${id.toString()}'),
         headers: <String, String>{
-          'Authorization': "Bearer " + App().prefs.token
+          'Authorization': "Bearer ${App().prefs.token}"
         },
       );
     }
@@ -160,7 +158,7 @@ class _NewEditStepState extends State<NewEditStep>
   _imgFromServer(int id) async {
     final response = await http.get(
       Uri.parse('${App().prefs.hostname}/api/steps/images/${id.toString()}'),
-      headers: <String, String>{'Authorization': "Bearer " + App().prefs.token},
+      headers: <String, String>{'Authorization': "Bearer ${App().prefs.token}"},
     );
     if (response.statusCode == 200) {
       setState(() {
@@ -194,7 +192,7 @@ class _NewEditStepState extends State<NewEditStep>
           Uri.parse(
               '${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
           headers: <String, String>{
-            'Authorization': "Bearer " + App().prefs.token
+            'Authorization': "Bearer ${App().prefs.token}"
           },
           body: soundBytes);
       if (response.statusCode != 200) {
@@ -204,7 +202,7 @@ class _NewEditStepState extends State<NewEditStep>
       http.delete(
         Uri.parse('${App().prefs.hostname}/api/steps/sounds/${id.toString()}'),
         headers: <String, String>{
-          'Authorization': "Bearer " + App().prefs.token
+          'Authorization': "Bearer ${App().prefs.token}"
         },
       );
     }
@@ -241,6 +239,7 @@ class _NewEditStepState extends State<NewEditStep>
                       onPressed: () async {
                         await widget.crud.delete(widget.step.id);
                         await _deleteTemporarySound();
+                        if (!mounted) return;
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(tr(context, "step_deleted"))));
@@ -383,15 +382,12 @@ class _NewEditStepState extends State<NewEditStep>
                                   interactiveFlags: InteractiveFlag.all &
                                       ~InteractiveFlag.rotate),
                               children: <Widget>[
-                                TileLayerWidget(
-                                  options: TileLayerOptions(
-                                    urlTemplate:
-                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    subdomains: ['a', 'b', 'c'],
-                                  ),
+                                TileLayer(
+                                  urlTemplate:
+                                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  subdomains: const ['a', 'b', 'c'],
                                 ),
-                                MarkerLayerWidget(
-                                    options: MarkerLayerOptions(
+                                MarkerLayer(
                                   markers: [
                                     Marker(
                                       width: 80.0,
@@ -405,7 +401,7 @@ class _NewEditStepState extends State<NewEditStep>
                                       ),
                                     ),
                                   ],
-                                ))
+                                )
                               ]),
                         ),
                       ),
@@ -584,6 +580,7 @@ class _NewEditStepState extends State<NewEditStep>
                                             } catch (e) {
                                               msg = e.toString();
                                             }
+                                            if (!mounted) return;
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               SnackBar(content: Text(msg)),
@@ -627,7 +624,7 @@ class _NewEditStepState extends State<NewEditStep>
         Uri.parse(
             '${App().prefs.hostname}/api/steps/sounds/${_randomId.toString()}'),
         headers: <String, String>{
-          'Authorization': "Bearer " + App().prefs.token
+          'Authorization': "Bearer ${App().prefs.token}"
         });
   }
 }
