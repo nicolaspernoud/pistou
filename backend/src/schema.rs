@@ -7,7 +7,6 @@ table! {
         location_hint -> Text,
         question -> Text,
         answer -> Text,
-        media -> Text,
         is_end -> Bool,
     }
 }
@@ -21,7 +20,4 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(
-    steps,
-    users,
-);
+allow_tables_to_appear_in_same_query!(steps, users,);

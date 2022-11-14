@@ -25,7 +25,7 @@ pub async fn step_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"  go there  ","question":" what is the color of the sky?  ","answer":"  blue  ","media":"  1.jpg  "}"#,
+        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"  go there  ","question":" what is the color of the sky?  ","answer":"  blue  "}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -39,7 +39,7 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}}"#
         )
     );
 
@@ -61,11 +61,11 @@ pub async fn step_test(
         Method::PUT,
         &format!("/api/steps/{}", id),
         &format!(
-            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the grass?","answer":"green","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the grass?","answer":"green","is_end":false}}"#
         ),
         StatusCode::OK,
         format!(
-            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the grass?","answer":"green","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the grass?","answer":"green","is_end":false}}"#
         )
     );
 
@@ -104,7 +104,7 @@ pub async fn step_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}"#,
+        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -113,7 +113,7 @@ pub async fn step_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","media":"2.jpg","is_end":false}"#,
+        r#"{"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -125,7 +125,7 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}},{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","media":"2.jpg","is_end":false}}]"#
+            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}},{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","is_end":false}}]"#
         )
     );
 
@@ -136,7 +136,7 @@ pub async fn step_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":4,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}"#,
+        r#"{"rank":4,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}"#,
         StatusCode::CREATED,
         format!(r#"{{"id":{id3},"rank":3,"latitude":45.366669,"longitude":5.58333"#)
     );
@@ -161,7 +161,7 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}},{{"id":{id3},"rank":2,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}]"#
+            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}},{{"id":{id3},"rank":2,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}]"#
         )
     );
 
@@ -172,11 +172,11 @@ pub async fn step_test(
         Method::PUT,
         &format!("/api/steps/{}", id1),
         &format!(
-            r#"{{"id":{id1},"rank":10,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id1},"rank":10,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","is_end":false}}"#
         ),
         StatusCode::OK,
         format!(
-            r#"{{"id":{id1},"rank":2,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id1},"rank":2,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","is_end":false}}"#
         )
     );
 
@@ -189,7 +189,7 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"[{{"id":{id1},"rank":2,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}},{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}]"#
+            r#"[{{"id":{id1},"rank":2,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","is_end":false}},{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}]"#
         )
     );
 
@@ -200,11 +200,11 @@ pub async fn step_test(
         Method::PUT,
         &format!("/api/steps/{}", id1),
         &format!(
-            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","is_end":false}}"#
         ),
         StatusCode::OK,
         format!(
-            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the city?","answer":"grey","is_end":false}}"#
         )
     );
 
@@ -215,11 +215,11 @@ pub async fn step_test(
         Method::PUT,
         &format!("/api/steps/{}", id3),
         &format!(
-            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}"#
+            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}"#
         ),
         StatusCode::OK,
         format!(
-            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","media":"3.jpg","is_end":false}}"#
+            r#"{{"id":{id3},"rank":1,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}"#
         )
     );
 

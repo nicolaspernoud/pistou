@@ -18,7 +18,8 @@ class _MediaPlayerState extends State<MediaPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.uri,
+    _controller = VideoPlayerController.network(
+        "${widget.uri}?date=${DateTime.now().millisecondsSinceEpoch}",
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
         httpHeaders: headers);
 
@@ -61,11 +62,7 @@ class _MediaPlayerState extends State<MediaPlayer> {
               ),
             ),
           )
-        : const SizedBox(
-            width: 60,
-            height: 60,
-            child: CircularProgressIndicator(),
-          );
+        : const CircularProgressIndicator();
   }
 }
 

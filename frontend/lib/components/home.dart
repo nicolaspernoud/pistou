@@ -65,11 +65,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _hasMedia = false;
       });
       try {
-        await http.head(Uri.parse(
+        var headResp = await http.head(Uri.parse(
             '${App().prefs.hostname}/api/steps/medias/${s.id.toString()}'));
-        setState(() {
-          _hasMedia = true;
-        });
+        if (headResp.statusCode == 200) {
+          setState(() {
+            _hasMedia = true;
+          });
+        }
       } catch (e) {
         _hasMedia = false;
       }

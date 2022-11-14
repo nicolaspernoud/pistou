@@ -44,7 +44,6 @@ void main() {
           latitude: 45.0,
           locationHint: 'test hint',
           longitude: 15.0,
-          media: 'media.mp3',
           question: 'test question',
           rank: 20);
       final a1Json = jsonEncode(i1.toJson());

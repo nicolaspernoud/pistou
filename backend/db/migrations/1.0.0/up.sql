@@ -13,7 +13,6 @@ CREATE TABLE steps (
     location_hint VARCHAR NOT NULL,
     question VARCHAR NOT NULL,
     answer VARCHAR NOT NULL,
-    media VARCHAR NOT NULL,
     is_end BOOLEAN NOT NULL
 );
 
@@ -25,7 +24,6 @@ INSERT INTO
         location_hint,
         question,
         answer,
-        media,
         is_end
     )
 VALUES
@@ -36,6 +34,5 @@ VALUES
         "Go there",
         "What is the color of the sky?",
         "Blue",
-        "1.jpg",
         false
     );

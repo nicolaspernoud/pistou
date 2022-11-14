@@ -182,7 +182,6 @@ class SettingsState extends State<Settings> {
                                   latitude: 0.0,
                                   locationHint: '',
                                   longitude: 0.0,
-                                  media: '',
                                   question: '',
                                   rank: 1000,
                                   isEnd: false,

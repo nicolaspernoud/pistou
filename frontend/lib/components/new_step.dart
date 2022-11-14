@@ -67,10 +67,12 @@ class NewEditStepState extends State<NewEditStep>
 
   Future<void> _checkHasMedia(int id) async {
     try {
-      await http.head(Uri.parse(mediaUrl));
-      setState(() {
-        _mediaStatus = MediaStatus.available;
-      });
+      var headResp = await http.head(Uri.parse(mediaUrl));
+      if (headResp.statusCode == 200) {
+        setState(() {
+          _mediaStatus = MediaStatus.available;
+        });
+      }
     } catch (e) {
       setState(() {
         _mediaStatus = MediaStatus.none;
@@ -495,7 +497,7 @@ class NewEditStepState extends State<NewEditStep>
                             child: Column(
                               children: [
                                 if (_mediaStatus == MediaStatus.available)
-                                  MediaPlayer(uri: mediaUrl),
+                                  MediaPlayer(key: UniqueKey(), uri: mediaUrl),
                                 Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

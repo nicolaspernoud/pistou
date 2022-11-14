@@ -9,7 +9,6 @@ class Step extends Serialisable with EquatableMixin {
   String locationHint;
   String question;
   String answer;
-  String media;
   bool isEnd;
 
   Step(
@@ -20,7 +19,6 @@ class Step extends Serialisable with EquatableMixin {
       required this.locationHint,
       required this.question,
       required this.answer,
-      required this.media,
       required this.isEnd})
       : super(id: id);
 
@@ -34,7 +32,6 @@ class Step extends Serialisable with EquatableMixin {
       'location_hint': locationHint,
       'question': question,
       'answer': answer,
-      'media': media,
       'is_end': isEnd
     };
   }
@@ -48,7 +45,6 @@ class Step extends Serialisable with EquatableMixin {
         locationHint: json['location_hint'],
         question: json['question'],
         answer: json['answer'],
-        media: json['media'],
         isEnd: json['is_end']);
   }
 
@@ -62,7 +58,6 @@ class Step extends Serialisable with EquatableMixin {
       locationHint,
       question,
       answer,
-      media,
       isEnd
     ];
   }

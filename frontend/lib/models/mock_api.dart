@@ -8,7 +8,7 @@ class MockAPI {
       switch (request.url.toString()) {
         case 'http://test/api/users/1/current_step':
           return Response('''
-              {"id":1,"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","media":"2.jpg","is_end":false}
+              {"id":1,"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","is_end":false}
               ''', 200);
         case 'http://test/api/users':
           return Response('''

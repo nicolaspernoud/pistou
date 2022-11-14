@@ -43,7 +43,7 @@ pub async fn advance_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}"#,
+        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -52,7 +52,7 @@ pub async fn advance_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","media":"2.jpg","is_end":false}"#,
+        r#"{"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -66,7 +66,7 @@ pub async fn advance_test(
         "",
         StatusCode::OK,
         format!(
-            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","media":"1.jpg","is_end":false}}"#
+            r#"{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}}"#
         )
     );
 
@@ -111,7 +111,7 @@ pub async fn advance_test(
         r#"{"password":"Test password","latitude":45.74846,"longitude":4.84671,"answer":"blue"}"#,
         StatusCode::OK,
         format!(
-            r#"{{"type":"Success","id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","media":"2.jpg","is_end":false}}"#
+            r#"{{"type":"Success","id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","is_end":false}}"#
         )
     );
 
@@ -124,7 +124,7 @@ pub async fn advance_test(
         "",
         StatusCode::OK,
         format!(
-            r#"{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","media":"2.jpg","is_end":false}}"#
+            r#"{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"quel est le plus grand parc de Lyon ?","answer":"Le Parc de la Tête d'Or","is_end":false}}"#
         )
     );
 

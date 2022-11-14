@@ -23,7 +23,6 @@ macro_rules! trim {
             self.location_hint = self.location_hint.trim().to_string();
             self.question = self.question.trim().to_string();
             self.answer = self.answer.trim().to_string();
-            self.media = self.media.trim().to_string();
             self
         }
     };
@@ -41,7 +40,6 @@ pub struct Step {
     pub location_hint: String,
     pub question: String,
     pub answer: String,
-    pub media: String,
     #[serde(default)]
     pub is_end: bool,
 }
@@ -94,7 +92,6 @@ pub struct NewStep {
     pub location_hint: String,
     pub question: String,
     pub answer: String,
-    pub media: String,
     #[serde(default)]
     pub is_end: bool,
 }
