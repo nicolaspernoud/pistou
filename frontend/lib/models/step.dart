@@ -8,6 +8,7 @@ class Step extends Serialisable with EquatableMixin {
   double longitude;
   String locationHint;
   String question;
+  String? shakeMessage;
   String answer;
   bool isEnd;
 
@@ -18,6 +19,7 @@ class Step extends Serialisable with EquatableMixin {
       required this.longitude,
       required this.locationHint,
       required this.question,
+      this.shakeMessage,
       required this.answer,
       required this.isEnd})
       : super(id: id);
@@ -31,6 +33,7 @@ class Step extends Serialisable with EquatableMixin {
       'longitude': longitude,
       'location_hint': locationHint,
       'question': question,
+      if (shakeMessage != null) 'shake_message': shakeMessage,
       'answer': answer,
       'is_end': isEnd
     };
@@ -44,13 +47,14 @@ class Step extends Serialisable with EquatableMixin {
         longitude: json['longitude'],
         locationHint: json['location_hint'],
         question: json['question'],
+        shakeMessage: json['shake_message'],
         answer: json['answer'],
         isEnd: json['is_end']);
   }
 
   @override
   List<Object> get props {
-    return [
+    var props = [
       id,
       rank,
       latitude,
@@ -60,6 +64,8 @@ class Step extends Serialisable with EquatableMixin {
       answer,
       isEnd
     ];
+    if (shakeMessage != null) props.add(shakeMessage!);
+    return props;
   }
 
   @override

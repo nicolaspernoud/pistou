@@ -298,6 +298,14 @@ class NewEditStepState extends State<NewEditStep>
                       },
                     ),
                     TextFormField(
+                      initialValue: widget.step.shakeMessage ?? "",
+                      decoration: InputDecoration(
+                          labelText: tr(context, "shake_message")),
+                      onChanged: (value) {
+                        widget.step.shakeMessage = value != "" ? value : null;
+                      },
+                    ),
+                    TextFormField(
                       initialValue: widget.step.answer,
                       decoration:
                           InputDecoration(labelText: tr(context, "answer")),

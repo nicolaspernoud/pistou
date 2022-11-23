@@ -72,7 +72,9 @@ class NewEditUserState extends State<NewEditUser> {
                   TextFormField(
                     decoration:
                         InputDecoration(labelText: tr(context, "current_step")),
-                    initialValue: widget.user.currentStep.toString(),
+                    initialValue: widget.user.currentStep != null
+                        ? widget.user.currentStep.toString()
+                        : "1",
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.digitsOnly

@@ -1,4 +1,6 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     steps (id) {
         id -> Integer,
         rank -> Integer,
@@ -6,12 +8,13 @@ table! {
         longitude -> Double,
         location_hint -> Text,
         question -> Text,
+        shake_message -> Nullable<Text>,
         answer -> Text,
         is_end -> Bool,
     }
 }
 
-table! {
+diesel::table! {
     users (id) {
         id -> Integer,
         name -> Text,
@@ -20,4 +23,7 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(steps, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    steps,
+    users,
+);

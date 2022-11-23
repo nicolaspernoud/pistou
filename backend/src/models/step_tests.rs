@@ -104,7 +104,7 @@ pub async fn step_test(
         "0101",
         Method::POST,
         "/api/steps",
-        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}"#,
+        r#"{"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","shake_message":"  shaked!  ","answer":"blue","is_end":false}"#,
         StatusCode::CREATED,
         "{\"id\""
     );
@@ -125,7 +125,7 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}},{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","is_end":false}}]"#
+            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","shake_message":"shaked!","answer":"blue","is_end":false}},{{"id":{id2},"rank":2,"latitude":45.16667,"longitude":5.71667,"location_hint":"go there after","question":"what is the color of the grass?","answer":"green","is_end":false}}]"#
         )
     );
 
@@ -161,11 +161,11 @@ pub async fn step_test(
         "",
         StatusCode::OK,
         format!(
-            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","answer":"blue","is_end":false}},{{"id":{id3},"rank":2,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}]"#
+            r#"[{{"id":{id1},"rank":1,"latitude":45.74846,"longitude":4.84671,"location_hint":"go there","question":"what is the color of the sky?","shake_message":"shaked!","answer":"blue","is_end":false}},{{"id":{id3},"rank":2,"latitude":45.366669,"longitude":5.58333,"location_hint":"go there after","question":"what is the color of the sun?","answer":"yellow","is_end":false}}]"#
         )
     );
 
-    // Alter the first steps and check that it has been reranked
+    // Alter the first step and check that it has been reranked
     do_test!(
         app,
         "0101",

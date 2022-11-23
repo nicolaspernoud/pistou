@@ -12,6 +12,7 @@ CREATE TABLE steps (
     longitude DOUBLE NOT NULL,
     location_hint VARCHAR NOT NULL,
     question VARCHAR NOT NULL,
+    shake_message VARCHAR,
     answer VARCHAR NOT NULL,
     is_end BOOLEAN NOT NULL
 );

@@ -23,6 +23,7 @@ macro_rules! trim {
             self.location_hint = self.location_hint.trim().to_string();
             self.question = self.question.trim().to_string();
             self.answer = self.answer.trim().to_string();
+            self.shake_message = self.shake_message.as_ref().map(|v| v.trim().to_string());
             self
         }
     };
@@ -31,7 +32,7 @@ macro_rules! trim {
 #[derive(
     Debug, Clone, Serialize, Deserialize, Queryable, Insertable, AsChangeset, Identifiable,
 )]
-#[diesel(table_name = steps)]
+#[diesel(table_name = steps, treat_none_as_null = true)]
 pub struct Step {
     pub id: i32,
     pub rank: i32,
@@ -39,6 +40,8 @@ pub struct Step {
     pub longitude: f64,
     pub location_hint: String,
     pub question: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shake_message: Option<String>,
     pub answer: String,
     #[serde(default)]
     pub is_end: bool,
@@ -91,6 +94,7 @@ pub struct NewStep {
     pub longitude: f64,
     pub location_hint: String,
     pub question: String,
+    pub shake_message: Option<String>,
     pub answer: String,
     #[serde(default)]
     pub is_end: bool,
@@ -165,7 +169,7 @@ pub async fn update(
         } else {
             Ordering::Less
         };
-
+        println!("=============================O: {:?}", o);
         diesel::update(steps)
             .filter(id.eq(*oid))
             .set(&*o)

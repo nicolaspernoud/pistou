@@ -8,6 +8,7 @@ import 'package:pistou/models/crud.dart';
 import 'package:pistou/models/user.dart';
 import 'package:pistou/globals.dart';
 import 'package:http/http.dart' as http;
+import 'package:shake/shake.dart';
 import '../i18n.dart';
 import 'settings.dart';
 
@@ -36,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
       answer: "");
 
   final _answerController = TextEditingController();
+  String _shakeMessage = "";
 
   @override
   void dispose() {
@@ -51,6 +53,13 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       WidgetsBinding.instance.addPostFrameCallback(openSettings);
     }
+    ShakeDetector.autoStart(
+      shakeThresholdGravity: 1.5,
+      onPhoneShake: () {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_shakeMessage)));
+      },
+    );
   }
 
   Future<void> _getCurrentStep(bool advance) async {
@@ -63,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _answerController.text = "";
         _step = Future.value(s);
         _hasMedia = false;
+        _shakeMessage = s.shakeMessage ?? tr(context, "default_shake_message");
       });
       try {
         var headResp = await http.head(Uri.parse(

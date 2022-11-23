@@ -43,6 +43,7 @@ dependencies:
   latlong2: ^0.8.1
   path_provider: ^2.0.11
   permission_handler: ^10.2.0
+  shake: ^2.1.0
   shared_preferences: ^2.0.15
   url_launcher: ^6.1.6
   video_player: ^2.4.7
