@@ -218,10 +218,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           if (_hasMedia)
-                            MediaPlayer(
-                                key: UniqueKey(),
-                                uri:
-                                    '${App().prefs.hostname}/api/steps/medias/${snapshot.data!.id.toString()}'),
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MediaPlayer(
+                                    key: UniqueKey(),
+                                    uri:
+                                        '${App().prefs.hostname}/api/steps/medias/${snapshot.data!.id.toString()}'),
+                              ),
+                            ),
                           if (!snapshot.data!.isEnd) ...[
                             Center(
                               child: Padding(
