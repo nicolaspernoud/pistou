@@ -6,12 +6,14 @@ use crate::errors::ServerError;
 
 pub struct AppConfig {
     pub bearer_token: String,
+    pub location_check: bool,
 }
 
 impl AppConfig {
-    pub fn new(token: String) -> Self {
+    pub fn new(token: String, location_check: bool) -> Self {
         AppConfig {
             bearer_token: token,
+            location_check: location_check,
         }
     }
 }
@@ -146,7 +148,7 @@ mod extractor_tests {
     async fn test_no_header() {
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .app_data(Data::new(AppConfig::new("0101".to_string(), true)))
                 .service(read),
         )
         .await;
@@ -163,7 +165,7 @@ mod extractor_tests {
     async fn test_empty_header() {
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .app_data(Data::new(AppConfig::new("0101".to_string(), true)))
                 .service(read),
         )
         .await;
@@ -185,7 +187,7 @@ mod extractor_tests {
     async fn test_empty_token() {
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .app_data(Data::new(AppConfig::new("0101".to_string(), true)))
                 .service(read),
         )
         .await;
@@ -207,7 +209,7 @@ mod extractor_tests {
     async fn test_wrong_token() {
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .app_data(Data::new(AppConfig::new("0101".to_string(), true)))
                 .service(read),
         )
         .await;
@@ -226,7 +228,7 @@ mod extractor_tests {
     async fn test_good_token() {
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppConfig::new("0101".to_string())))
+                .app_data(Data::new(AppConfig::new("0101".to_string(), true)))
                 .service(read),
         )
         .await;

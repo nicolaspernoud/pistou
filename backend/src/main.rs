@@ -52,11 +52,15 @@ async fn main() -> std::io::Result<()> {
         .expect("couldn't run migrations");
 
     // Set up authorization token
-    let app_config = AppConfig::new(env::var("TOKEN").unwrap_or_else(|_| -> String {
-        let token = crate::utils::random_string();
-        info!("Authorization token: {}", token);
-        token
-    }));
+    let app_config = AppConfig::new(
+        env::var("TOKEN").unwrap_or_else(|_| -> String {
+            let token = crate::utils::random_string();
+            info!("Authorization token: {}", token);
+            token
+        }),
+        std::str::FromStr::from_str(&env::var("LOCATION_CHECK").unwrap_or_default())
+            .unwrap_or(true),
+    );
     // Data should be constructed outside the HttpServer::new closure if shared, potentially mutable state is desired...
     let app_data = Data::new(app_config);
 

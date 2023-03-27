@@ -26,7 +26,7 @@ mod tests {
             .expect("couldn't run migrations");
 
         // Set up authorization token
-        let app_config = AppConfig::new("0101".to_string());
+        let app_config = AppConfig::new("0101".to_string(), true);
         let app_data = Data::new(app_config);
 
         user_test(&pool, &app_data).await;

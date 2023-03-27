@@ -62,7 +62,7 @@ class _MediaPlayerState extends State<MediaPlayer> {
               ),
             ),
           )
-        : const CircularProgressIndicator();
+        : const Center(child: CircularProgressIndicator());
   }
 }
 

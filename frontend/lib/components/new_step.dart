@@ -16,6 +16,8 @@ import 'dart:math';
 import '../i18n.dart';
 import 'media_player.dart';
 
+const elementsHeight = 500.0;
+
 enum MediaStatus {
   none,
   available,
@@ -124,7 +126,7 @@ class NewEditStepState extends State<NewEditStep>
     final orientedImage = image.bakeOrientation(capturedImage!);
     final encodedImage =
         image.encodeJpg(orientedImage, quality: JPG_IMAGE_QUALITY);
-    return encodedImage as Uint8List;
+    return encodedImage;
   }
 
   Future<void> _imgToServer(int id) async {
@@ -368,7 +370,7 @@ class NewEditStepState extends State<NewEditStep>
                       },
                     ),
                     SizedBox(
-                      height: 350,
+                      height: elementsHeight,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ClipRRect(
@@ -384,6 +386,7 @@ class NewEditStepState extends State<NewEditStep>
                                       widget.step.longitude),
                                   minZoom: 0,
                                   maxZoom: 18,
+                                  zoom: 18,
                                   enableScrollWheel: true,
                                   interactiveFlags: InteractiveFlag.all &
                                       ~InteractiveFlag.rotate),
@@ -450,6 +453,7 @@ class NewEditStepState extends State<NewEditStep>
                                         },
                                         child: Image.memory(
                                           snapshot.data!,
+                                          height: elementsHeight,
                                         ),
                                       ),
                                     ),
@@ -505,7 +509,10 @@ class NewEditStepState extends State<NewEditStep>
                             child: Column(
                               children: [
                                 if (_mediaStatus == MediaStatus.available)
-                                  MediaPlayer(key: UniqueKey(), uri: mediaUrl),
+                                  SizedBox(
+                                      height: elementsHeight,
+                                      child: MediaPlayer(
+                                          key: UniqueKey(), uri: mediaUrl)),
                                 Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

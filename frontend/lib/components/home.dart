@@ -197,28 +197,31 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                           ),
-                          Flexible(
+                          Expanded(
+                            flex: 2,
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  child: InteractiveViewer(
-                                    panEnabled: true,
-                                    minScale: 1,
-                                    maxScale: 10,
-                                    child: Image.network(
-                                      '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
-                                      errorBuilder: (BuildContext context,
-                                          Object exception,
-                                          StackTrace? stackTrace) {
-                                        return const Text('-');
-                                      },
-                                    ),
-                                  )),
+                              child: Center(
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    child: InteractiveViewer(
+                                      panEnabled: true,
+                                      minScale: 1,
+                                      maxScale: 10,
+                                      child: Image.network(
+                                        '${App().prefs.hostname}/api/steps/images/${snapshot.data!.id.toString()}',
+                                        errorBuilder: (BuildContext context,
+                                            Object exception,
+                                            StackTrace? stackTrace) {
+                                          return const Text('-');
+                                        },
+                                      ),
+                                    )),
+                              ),
                             ),
                           ),
                           if (_hasMedia)
-                            Flexible(
+                            Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: MediaPlayer(

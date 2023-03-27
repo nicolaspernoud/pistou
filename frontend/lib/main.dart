@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
           advanceCrud: AdvanceCrud()),
       localizationsDelegates: const [
         MyLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
         GlobalWidgetsLocalizations.delegate,
       ],
       supportedLocales: const [

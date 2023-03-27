@@ -15,7 +15,8 @@
       "args": [],
       "env": {
         "TOKEN": "token",
-        "RUST_LOG": "debug"
+        "RUST_LOG": "debug",
+        "LOCATION_CHECK": "false"
       },
       "cwd": "${workspaceRoot}/backend"
     },

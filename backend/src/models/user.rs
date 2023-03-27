@@ -2,8 +2,8 @@ use log::{debug, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    crud_delete, crud_delete_all, crud_read, crud_read_all, crud_use, errors::ServerError,
-    models::step::Step, schema::users,
+    auth::AppConfig, crud_delete, crud_delete_all, crud_read, crud_read_all, crud_use,
+    errors::ServerError, models::step::Step, schema::users,
 };
 
 use argon2::{
@@ -143,6 +143,7 @@ pub async fn advance(
     pool: web::Data<DbPool>,
     oid: web::Path<i32>,
     answer: web::Json<Answer>,
+    config: web::Data<AppConfig>,
 ) -> Result<HttpResponse, ServerError> {
     let mut conn = pool.get()?;
     let step = web::block(move || {
@@ -171,12 +172,14 @@ pub async fn advance(
             .first::<Step>(&mut conn)?;
 
         // Check that the location is close enough
-        let dist = get_dist(answer.latitude, answer.longitude, s.latitude, s.longitude);
-        info!("Distance: {}", dist);
-        if dist > 50.0 {
-            return Err(ServerError::NotAcceptable(
-                serde_json::to_string(&Message::WrongPlace { distance: dist }).unwrap(),
-            ));
+        if config.location_check {
+            let dist = get_dist(answer.latitude, answer.longitude, s.latitude, s.longitude);
+            info!("Distance: {}", dist);
+            if dist > 50.0 {
+                return Err(ServerError::NotAcceptable(
+                    serde_json::to_string(&Message::WrongPlace { distance: dist }).unwrap(),
+                ));
+            }
         }
 
         // Check that the given answer is correct
