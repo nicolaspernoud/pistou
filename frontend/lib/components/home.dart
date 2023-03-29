@@ -56,8 +56,9 @@ class _MyHomePageState extends State<MyHomePage> {
     ShakeDetector.autoStart(
       shakeThresholdGravity: 1.5,
       onPhoneShake: () {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(_shakeMessage)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            duration: const Duration(seconds: 5),
+            content: Text(_shakeMessage)));
       },
     );
   }
@@ -95,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        duration: const Duration(seconds: 5),
         content: Text(stepAndOutcome.outcome),
       ),
     );
