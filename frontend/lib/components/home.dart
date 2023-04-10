@@ -54,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
       WidgetsBinding.instance.addPostFrameCallback(openSettings);
     }
     ShakeDetector.autoStart(
-      shakeThresholdGravity: 1.5,
+      shakeThresholdGravity: 2.0,
       onPhoneShake: () {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             duration: const Duration(seconds: 5),
@@ -71,9 +71,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if (s != null) {
       setState(() {
         _answerController.text = "";
-        _step = Future.value(s);
         _hasMedia = false;
         _shakeMessage = s.shakeMessage ?? tr(context, "default_shake_message");
+        _step = Future.value(s);
       });
       try {
         var headResp = await http.head(Uri.parse(

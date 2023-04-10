@@ -199,17 +199,17 @@ pub async fn advance(
             .filter(|c| c.is_alphanumeric() || c.is_whitespace())
             .collect();
 
-        let given_anwser: String = answer
+        let given_answer: String = answer
             .answer
             .chars()
             .map(remove_accents)
             .filter(|c| c.is_alphanumeric() || c.is_whitespace())
             .collect();
 
-        debug!("given answer: {}", given_anwser);
+        debug!("given answer: {}", given_answer);
         debug!("good answer:  {}", good_answer);
 
-        if sublime_fuzzy::best_match(&given_anwser, &good_answer).is_none() {
+        if sublime_fuzzy::best_match(&given_answer, &good_answer).is_none() {
             return Err(ServerError::NotAcceptable(
                 serde_json::to_string(&Message::WrongAnswer).unwrap(),
             ));
