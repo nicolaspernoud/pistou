@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pistou/models/preferences.dart';
 
 class App {
-  late Preferences prefs;
+  Preferences prefs = Preferences();
   App._privateConstructor();
 
   static final App _instance = App._privateConstructor();
@@ -38,7 +38,6 @@ class App {
   }
 
   Future init() async {
-    prefs = Preferences();
     if (kIsWeb || !Platform.environment.containsKey('FLUTTER_TEST')) {
       await prefs.read();
     }

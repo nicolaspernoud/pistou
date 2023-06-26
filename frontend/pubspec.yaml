@@ -36,11 +36,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_map: ^3.0.0
-  http: ^0.13.5
+  flutter_map: ^5.0.0
+  http: ^1.0.0
   image: ^4.0.15
   image_picker: ^0.8.6
-  latlong2: ^0.8.1
+  latlong2: ^0.9.0
   path_provider: ^2.0.11
   permission_handler: ^10.2.0
   shake: ^2.1.0
@@ -49,7 +49,7 @@ dependencies:
   video_player: ^2.4.7
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.12.0
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
