@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
       answer: "");
 
   final _answerController = TextEditingController();
-  String _shakeMessage = "";
+  String? _shakeMessage;
 
   @override
   void dispose() {
@@ -54,25 +54,28 @@ class _MyHomePageState extends State<MyHomePage> {
       WidgetsBinding.instance.addPostFrameCallback(openSettings);
     }
     ShakeDetector.autoStart(
-      shakeThresholdGravity: 2.0,
       onPhoneShake: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            duration: const Duration(seconds: 5),
-            content: Text(_shakeMessage)));
+        if (_shakeMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              duration: const Duration(seconds: 5),
+              content: Text(_shakeMessage!)));
+        }
       },
     );
   }
 
   Future<void> _getCurrentStep(bool advance) async {
     var stepAndOutcome = advance
+        // ignore: use_build_context_synchronously
         ? await widget.advanceCrud.advance(context, answer)
+        // ignore: use_build_context_synchronously
         : await widget.advanceCrud.getCurrentStep(context);
     var s = stepAndOutcome.step;
     if (s != null) {
       setState(() {
         _answerController.text = "";
         _hasMedia = false;
-        _shakeMessage = s.shakeMessage ?? tr(context, "default_shake_message");
+        _shakeMessage = s.shakeMessage;
         _step = Future.value(s);
       });
       try {

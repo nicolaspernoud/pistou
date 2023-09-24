@@ -39,10 +39,10 @@ dependencies:
   flutter_map: ^5.0.0
   http: ^1.0.0
   image: ^4.0.15
-  image_picker: ^0.8.6
+  image_picker: ^1.0.4
   latlong2: ^0.9.0
   path_provider: ^2.0.11
-  permission_handler: ^10.2.0
+  permission_handler: ^11.0.0
   shake: ^2.1.0
   shared_preferences: ^2.0.15
   url_launcher: ^6.1.6
