@@ -18,8 +18,9 @@ class _MediaPlayerState extends State<MediaPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
-        "${widget.uri}?date=${DateTime.now().millisecondsSinceEpoch}",
+    _controller = VideoPlayerController.networkUrl(
+        Uri.parse(
+            "${widget.uri}?date=${DateTime.now().millisecondsSinceEpoch}"),
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
         httpHeaders: headers);
 

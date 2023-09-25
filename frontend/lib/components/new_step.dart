@@ -45,6 +45,7 @@ class NewEditStepState extends State<NewEditStep>
   Future<Uint8List?>? imageBytes;
   bool _submitting = false;
   MediaStatus _mediaStatus = MediaStatus.none;
+  PlatformFile? _mediaFile;
   Uint8List? mediaBytes;
   final int _randomId = 100000 + Random().nextInt(100000);
 
@@ -73,11 +74,14 @@ class NewEditStepState extends State<NewEditStep>
       if (headResp.statusCode == 200) {
         setState(() {
           _mediaStatus = MediaStatus.available;
+          _mediaFile =
+              PlatformFile(name: headResp.headers["filename"]!, size: 0);
         });
       }
     } catch (e) {
       setState(() {
         _mediaStatus = MediaStatus.none;
+        _mediaFile = null;
       });
     }
   }
@@ -178,7 +182,8 @@ class NewEditStepState extends State<NewEditStep>
     if (mediaFile != null) {
       mediaBytes = mediaFile.files.first.bytes!;
       var id = widget.step.id > 0 ? widget.step.id : _randomId;
-      await _mediaToServer(id);
+      _mediaFile = mediaFile.files.first;
+      await _mediaToServer(id, _mediaFile!.extension);
       _checkHasMedia(id);
     } else {
       setState(() {
@@ -187,11 +192,11 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  Future<void> _mediaToServer(int id) async {
+  Future<void> _mediaToServer(int id, String? ext) async {
     if (mediaBytes != null) {
       final response = await http.post(
           Uri.parse(
-              '${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
+              '${App().prefs.hostname}/api/steps/medias/${id.toString()}${ext != null ? '.$ext' : ''}'),
           headers: <String, String>{
             'Authorization': "Bearer ${App().prefs.token}"
           },
@@ -512,7 +517,9 @@ class NewEditStepState extends State<NewEditStep>
                                   SizedBox(
                                       height: elementsHeight,
                                       child: MediaPlayer(
-                                          key: UniqueKey(), uri: mediaUrl)),
+                                          key: UniqueKey(),
+                                          uri:
+                                              "${App().prefs.hostname}/api/steps/medias/${_mediaFile!.name}")),
                                 Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -572,12 +579,14 @@ class NewEditStepState extends State<NewEditStep>
                                                 await _imgToServer(
                                                     widget.step.id);
                                                 await _mediaToServer(
-                                                    widget.step.id);
+                                                    widget.step.id,
+                                                    _mediaFile!.extension);
                                               } else {
                                                 var t = await widget.crud
                                                     .create(widget.step);
                                                 await _imgToServer(t.id);
-                                                await _mediaToServer(t.id);
+                                                await _mediaToServer(t.id,
+                                                    _mediaFile!.extension);
                                                 await _deleteTemporarymedia();
                                               }
                                               // Do nothing on TypeError as Create respond with a null id

@@ -270,7 +270,7 @@ pub async fn step_test(
 
     // Upload a sound for this step (we use the same image file, as we only want to test the upload, retrieving, and deletion)
     let img_body = std::fs::read("test_img.jpg").unwrap();
-    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}.mp3", id).as_str())
         .method(Method::POST)
         .insert_header(("Authorization", "Bearer 0101"))
         .set_payload(img_body.clone())
@@ -284,9 +284,11 @@ pub async fn step_test(
         .to_request();
     let resp = test::call_service(&mut app, req).await;
     assert_eq!(resp.status(), StatusCode::OK);
+    let body = test::read_body(resp).await;
+    assert_eq!(body, format!("{id}.mp3"));
 
-    // Retrieve the sound
-    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}", id).as_str())
+    // Retrieve the sound with full file name
+    let req = test::TestRequest::with_uri(format!("/api/steps/medias/{}.mp3", id).as_str())
         .method(Method::GET)
         .to_request();
     let resp = test::call_service(&mut app, req).await;

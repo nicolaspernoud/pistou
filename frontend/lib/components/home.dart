@@ -30,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Future<Step>? _step;
   bool _hasMedia = false;
+  String? _mediaFile;
   Answer answer = Answer(
       password: App().prefs.userPassword,
       latitude: 0.0,
@@ -75,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _answerController.text = "";
         _hasMedia = false;
+        _mediaFile = null;
         _shakeMessage = s.shakeMessage;
         _step = Future.value(s);
       });
@@ -84,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
         if (headResp.statusCode == 200) {
           setState(() {
             _hasMedia = true;
+            _mediaFile = headResp.headers["filename"];
           });
         }
       } catch (e) {
@@ -232,7 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: MediaPlayer(
                                     key: UniqueKey(),
                                     uri:
-                                        '${App().prefs.hostname}/api/steps/medias/${snapshot.data!.id.toString()}'),
+                                        '${App().prefs.hostname}/api/steps/medias/$_mediaFile'),
                               ),
                             ),
                           if (!snapshot.data!.isEnd) ...[

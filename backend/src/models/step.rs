@@ -5,9 +5,9 @@ use futures_util::StreamExt;
 use image::GenericImageView;
 use std::{
     cmp::Ordering,
-    fs::{create_dir_all, remove_file, File},
+    fs::{self, create_dir_all, remove_file, File},
     io::Write,
-    path::Path,
+    path::PathBuf,
 };
 
 use image::imageops::FilterType::Lanczos3;
@@ -147,7 +147,9 @@ pub async fn delete(
     })
     .await??;
     let _ = web::block(move || remove_file(image_filename(oid))).await;
-    let _ = web::block(move || remove_file(media_filename(oid))).await;
+    if let Some(media_filename) = media_filename_out(oid) {
+        let _ = web::block(move || remove_file(media_filename)).await;
+    }
     Ok(HttpResponse::Ok().body(format!("Deleted object with id: {}", oid)))
 }
 
@@ -248,14 +250,15 @@ fn image_filename(id: i32) -> String {
 
 const MEDIAS_PATH: &str = "data/items/medias";
 
-#[post("/medias/{oid}")]
+#[post("/medias/{oid}.{ext}")]
 async fn upload_media(
-    oid: web::Path<i32>,
+    path: web::Path<(i32, String)>,
     mut body: web::Payload,
     _: Authenticated,
 ) -> Result<HttpResponse, ServerError> {
     create_dir_all(MEDIAS_PATH)?;
-    let filename = media_filename(*oid);
+    let (oid, ext) = path.into_inner();
+    let filename = media_filename_in(oid, &ext);
     let mut file = File::create(&filename)?;
     while let Some(item) = body.next().await {
         file.write(&item?)?;
@@ -263,24 +266,32 @@ async fn upload_media(
     Ok(HttpResponse::Ok().body(filename))
 }
 
-#[get("/medias/{oid}")]
-async fn retrieve_media(oid: web::Path<i32>) -> Result<NamedFile> {
-    Ok(NamedFile::open(media_filename(*oid))?)
+#[get("/medias/{filename}")]
+async fn retrieve_media(filename: web::Path<String>) -> Result<NamedFile> {
+    Ok(NamedFile::open(format!(
+        "{path}/{filename}",
+        path = MEDIAS_PATH,
+        filename = filename
+    ))?)
 }
 
 #[head("/medias/{oid}")]
 async fn check_media(oid: web::Path<i32>) -> Result<HttpResponse, ServerError> {
-    if Path::new(&media_filename(*oid)).exists() {
-        Ok(HttpResponse::Ok().body("File exists"))
-    } else {
-        let res = HttpResponse::NotFound().body("File does not exist");
-        Ok(res)
-    }
+    let filename = media_filename_out(*oid)
+        .ok_or(ServerError::NotFound("File does not exist".to_owned()))?
+        .to_owned();
+    let filename = filename.file_name().unwrap().to_string_lossy().to_string();
+    Ok(HttpResponse::Ok()
+        .insert_header(("filename", filename.clone()))
+        .body(filename))
 }
 
 #[delete("/medias/{oid}")]
 async fn delete_media(oid: web::Path<i32>, _: Authenticated) -> Result<HttpResponse, ServerError> {
-    let d = web::block(move || remove_file(media_filename(*oid))).await?;
+    let filename = media_filename_out(*oid)
+        .ok_or(ServerError::NotFound("File does not exist".to_owned()))?
+        .to_owned();
+    let d = web::block(move || remove_file(filename)).await?;
     if let Ok(_) = d {
         Ok(HttpResponse::Ok().body("File deleted"))
     } else {
@@ -289,6 +300,25 @@ async fn delete_media(oid: web::Path<i32>, _: Authenticated) -> Result<HttpRespo
     }
 }
 
-fn media_filename(id: i32) -> String {
-    format!("{path}/{id}", path = MEDIAS_PATH, id = id)
+fn media_filename_in(id: i32, ext: &String) -> String {
+    if ext.is_empty() {
+        format!("{path}/{id}", path = MEDIAS_PATH, id = id)
+    } else {
+        format!("{path}/{id}.{ext}", path = MEDIAS_PATH, id = id)
+    }
+}
+
+fn media_filename_out(id: i32) -> Option<PathBuf> {
+    let entries = fs::read_dir(MEDIAS_PATH).ok()?;
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let file_name = entry.file_name();
+            let file_name = file_name.to_str()?;
+            let file_id = file_name.split(".").collect::<Vec<&str>>()[0];
+            if file_id == format!("{id}") {
+                return Some(entry.path());
+            }
+        }
+    }
+    None
 }

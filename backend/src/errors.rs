@@ -15,6 +15,7 @@ pub enum ServerError {
     Forbidden(String),
     NotAcceptable(String),
     Image(String),
+    NotFound(String),
 }
 
 impl std::fmt::Display for ServerError {
@@ -29,6 +30,7 @@ impl std::fmt::Display for ServerError {
             ServerError::Forbidden(m) => write!(f, "Error: {}", m),
             ServerError::NotAcceptable(m) => write!(f, "Error: {}", m),
             ServerError::Image(m) => write!(f, "Image error: {}", m),
+            ServerError::NotFound(m) => write!(f, "Error: {}", m),
         }
     }
 }
@@ -47,6 +49,7 @@ impl ResponseError for ServerError {
             ServerError::Forbidden(m) => HttpResponse::Forbidden().body(m.clone()),
             ServerError::NotAcceptable(m) => HttpResponse::NotAcceptable().body(m.clone()),
             ServerError::Image(m) => HttpResponse::InternalServerError().body(m.clone()),
+            ServerError::NotFound(m) => HttpResponse::NotFound().body(m.clone()),
         }
     }
 }
