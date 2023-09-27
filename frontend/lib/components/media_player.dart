@@ -1,3 +1,4 @@
+import 'package:just_audio/just_audio.dart';
 import 'package:pistou/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -12,58 +13,92 @@ class MediaPlayer extends StatefulWidget {
 }
 
 class _MediaPlayerState extends State<MediaPlayer> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? videoController;
+  bool audioOnly = false;
   Map<String, String> headers = {};
+  AudioPlayer? audioPlayer;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(
-        Uri.parse(
-            "${widget.uri}?date=${DateTime.now().millisecondsSinceEpoch}"),
-        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
-        httpHeaders: headers);
+    if (widget.uri.endsWith("mp3") || widget.uri.endsWith("wav")) {
+      // This is a sound
+      audioOnly = true;
+      audioPlayer = AudioPlayer(); // Create a player
+      audioPlayer?.setUrl(// Load a URL
+          widget.uri).then((value) {
+        audioPlayer?.play();
+        setState(() {});
+      });
+    } else {
+      // If not, this is a video
+      videoController = VideoPlayerController.networkUrl(
+          Uri.parse(
+              "${widget.uri}?date=${DateTime.now().millisecondsSinceEpoch}"),
+          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
+          httpHeaders: headers);
 
-    _controller.addListener(() {
-      setState(() {});
-    });
-    _controller.setLooping(true);
-    _controller.initialize();
-    _controller.play();
+      videoController?.addListener(() {
+        setState(() {});
+      });
+      videoController?.setLooping(true);
+      videoController?.initialize();
+      videoController?.play();
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (audioPlayer != null) audioPlayer!.dispose();
+    if (videoController != null) videoController!.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: SizedBox(
-              height: _controller.value.aspectRatio == 1.0 ? 100 : null,
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: <Widget>[
-                    VideoPlayer(_controller),
-                    ClosedCaption(text: _controller.value.caption.text),
-                    _ControlsOverlay(controller: _controller),
-                    VideoProgressIndicator(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      _controller,
-                      allowScrubbing: true,
-                    ),
-                  ],
+    if (audioOnly) {
+      return SizedBox.square(
+        dimension: 50,
+        child: audioPlayer!.playing
+            ? IconButton(
+                icon: const Icon(Icons.pause),
+                onPressed: () async {
+                  await audioPlayer?.stop();
+                  setState(() {});
+                })
+            : IconButton(
+                icon: const Icon(Icons.play_arrow),
+                onPressed: () async {
+                  audioPlayer?.play();
+                  setState(() {});
+                }),
+      );
+    } else {
+      return videoController!.value.isInitialized
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: SizedBox(
+                height: videoController?.value.aspectRatio == 1.0 ? 100 : null,
+                child: AspectRatio(
+                  aspectRatio: videoController!.value.aspectRatio,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: <Widget>[
+                      VideoPlayer(videoController!),
+                      ClosedCaption(text: videoController?.value.caption.text),
+                      _ControlsOverlay(controller: videoController!),
+                      VideoProgressIndicator(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        videoController!,
+                        allowScrubbing: true,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          )
-        : const Center(child: CircularProgressIndicator());
+            )
+          : const Center(child: CircularProgressIndicator());
+    }
   }
 }
 

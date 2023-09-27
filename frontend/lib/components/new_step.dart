@@ -193,6 +193,11 @@ class NewEditStepState extends State<NewEditStep>
   }
 
   Future<void> _mediaToServer(int id, String? ext) async {
+    await http.delete(
+        Uri.parse('${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
+        headers: <String, String>{
+          'Authorization': "Bearer ${App().prefs.token}"
+        });
     if (mediaBytes != null) {
       final response = await http.post(
           Uri.parse(
@@ -204,13 +209,6 @@ class NewEditStepState extends State<NewEditStep>
       if (response.statusCode != 200) {
         throw Exception(response.body.toString());
       }
-    } else if (_mediaStatus == MediaStatus.none) {
-      http.delete(
-        Uri.parse('${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
-        headers: <String, String>{
-          'Authorization': "Bearer ${App().prefs.token}"
-        },
-      );
     }
   }
 
@@ -576,11 +574,6 @@ class NewEditStepState extends State<NewEditStep>
                                               if (widget.step.id > 0) {
                                                 await widget.crud
                                                     .update(widget.step);
-                                                await _imgToServer(
-                                                    widget.step.id);
-                                                await _mediaToServer(
-                                                    widget.step.id,
-                                                    _mediaFile!.extension);
                                               } else {
                                                 var t = await widget.crud
                                                     .create(widget.step);

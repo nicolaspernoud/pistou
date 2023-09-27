@@ -229,7 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           if (_hasMedia)
-                            Expanded(
+                            Flexible(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: MediaPlayer(
