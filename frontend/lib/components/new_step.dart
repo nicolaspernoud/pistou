@@ -512,12 +512,16 @@ class NewEditStepState extends State<NewEditStep>
                             child: Column(
                               children: [
                                 if (_mediaStatus == MediaStatus.available)
-                                  SizedBox(
-                                      height: elementsHeight,
-                                      child: MediaPlayer(
-                                          key: UniqueKey(),
-                                          uri:
-                                              "${App().prefs.hostname}/api/steps/medias/${_mediaFile!.name}")),
+                                  Container(
+                                    constraints: const BoxConstraints(
+                                        maxHeight: elementsHeight),
+                                    child: MediaPlayer(
+                                      key: UniqueKey(),
+                                      uri:
+                                          "${App().prefs.hostname}/api/steps/medias/${_mediaFile!.name}",
+                                      autoplay: false,
+                                    ),
+                                  ),
                                 Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

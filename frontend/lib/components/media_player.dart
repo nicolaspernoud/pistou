@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class MediaPlayer extends StatefulWidget {
-  const MediaPlayer({super.key, required this.uri});
+  const MediaPlayer({super.key, required this.uri, required this.autoplay});
 
   final String uri;
+  final bool autoplay;
 
   @override
   State<MediaPlayer> createState() => _MediaPlayerState();
@@ -27,8 +28,10 @@ class _MediaPlayerState extends State<MediaPlayer> {
       audioPlayer = AudioPlayer(); // Create a player
       audioPlayer?.setUrl(// Load a URL
           widget.uri).then((value) {
-        audioPlayer?.play();
-        setState(() {});
+        if (widget.autoplay) {
+          audioPlayer?.play();
+          setState(() {});
+        }
       });
     } else {
       // If not, this is a video
@@ -43,7 +46,7 @@ class _MediaPlayerState extends State<MediaPlayer> {
       });
       videoController?.setLooping(true);
       videoController?.initialize();
-      videoController?.play();
+      if (widget.autoplay) videoController?.play();
     }
   }
 
@@ -57,21 +60,26 @@ class _MediaPlayerState extends State<MediaPlayer> {
   @override
   Widget build(BuildContext context) {
     if (audioOnly) {
-      return SizedBox.square(
-        dimension: 50,
-        child: audioPlayer!.playing
-            ? IconButton(
-                icon: const Icon(Icons.pause),
-                onPressed: () async {
-                  await audioPlayer?.stop();
-                  setState(() {});
-                })
-            : IconButton(
-                icon: const Icon(Icons.play_arrow),
-                onPressed: () async {
-                  audioPlayer?.play();
-                  setState(() {});
-                }),
+      return Stack(
+        alignment: Alignment.topRight,
+        children: [
+          Padding(
+              padding: const EdgeInsets.all(40),
+              child: audioPlayer!.playing
+                  ? IconButton(
+                      icon: const Icon(Icons.pause),
+                      onPressed: () async {
+                        await audioPlayer?.stop();
+                        setState(() {});
+                      })
+                  : IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      onPressed: () async {
+                        audioPlayer?.play();
+                        setState(() {});
+                      })),
+          _AudioControlsOverlay(audioPlayer: audioPlayer!),
+        ],
       );
     } else {
       return videoController!.value.isInitialized
@@ -102,20 +110,20 @@ class _MediaPlayerState extends State<MediaPlayer> {
   }
 }
 
+const List<double> _playbackRates = <double>[
+  0.25,
+  0.5,
+  1.0,
+  1.5,
+  2.0,
+  3.0,
+  5.0,
+  10.0,
+];
+
 class _ControlsOverlay extends StatelessWidget {
   const _ControlsOverlay({Key? key, required this.controller})
       : super(key: key);
-
-  static const List<double> _playbackRates = <double>[
-    0.25,
-    0.5,
-    1.0,
-    1.5,
-    2.0,
-    3.0,
-    5.0,
-    10.0,
-  ];
 
   final VideoPlayerController controller;
 
@@ -162,29 +170,78 @@ class _ControlsOverlay extends StatelessWidget {
                   )
               ];
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 16,
-              ),
-              child: Text(
-                '${controller.value.playbackSpeed}x',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 2.0,
-                      color: Colors.black,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child:
+                PlaybackSpeedIndicator(value: controller.value.playbackSpeed),
           ),
         ),
       ],
     );
+  }
+}
+
+class PlaybackSpeedIndicator extends StatelessWidget {
+  const PlaybackSpeedIndicator({
+    super.key,
+    required this.value,
+  });
+
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 12,
+        horizontal: 16,
+      ),
+      child: Text(
+        '${value}x',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          shadows: [
+            Shadow(
+              blurRadius: 2.0,
+              color: Colors.black,
+              offset: Offset(1, 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AudioControlsOverlay extends StatefulWidget {
+  const _AudioControlsOverlay({Key? key, required this.audioPlayer})
+      : super(key: key);
+
+  final AudioPlayer audioPlayer;
+
+  @override
+  State<_AudioControlsOverlay> createState() => _AudioControlsOverlayState();
+}
+
+class _AudioControlsOverlayState extends State<_AudioControlsOverlay> {
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<double>(
+        initialValue: widget.audioPlayer.speed,
+        tooltip: tr(context, "playback_speed"),
+        onSelected: (double speed) {
+          setState(() {
+            widget.audioPlayer.setSpeed(speed);
+          });
+        },
+        itemBuilder: (BuildContext context) {
+          return <PopupMenuItem<double>>[
+            for (final double speed in _playbackRates)
+              PopupMenuItem<double>(
+                value: speed,
+                child: Text('${speed}x'),
+              )
+          ];
+        },
+        child: PlaybackSpeedIndicator(value: widget.audioPlayer.speed));
   }
 }
