@@ -7,11 +7,10 @@ class User extends Serialisable with EquatableMixin {
   int? currentStep;
 
   User(
-      {required id,
+      {required super.id,
       required this.name,
       required this.password,
-      this.currentStep})
-      : super(id: id);
+      this.currentStep});
 
   @override
   Map<String, dynamic> toJson() {

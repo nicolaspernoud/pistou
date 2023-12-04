@@ -14,11 +14,10 @@ import 'settings.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.userCrud,
-      required this.advanceCrud})
-      : super(key: key);
+      required this.advanceCrud});
   final String title;
   final Crud userCrud;
   final AdvanceCrud advanceCrud;

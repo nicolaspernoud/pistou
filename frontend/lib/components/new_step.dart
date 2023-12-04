@@ -27,8 +27,7 @@ enum MediaStatus {
 class NewEditStep extends StatefulWidget {
   final Crud crud;
   final Step step;
-  const NewEditStep({Key? key, required this.crud, required this.step})
-      : super(key: key);
+  const NewEditStep({super.key, required this.crud, required this.step});
 
   @override
   NewEditStepState createState() => NewEditStepState();
@@ -88,11 +87,13 @@ class NewEditStepState extends State<NewEditStep>
 
   void _animatedMapMove(LatLng destLocation) {
     final latTween = Tween<double>(
-        begin: mapController.center.latitude, end: destLocation.latitude);
+        begin: mapController.camera.center.latitude,
+        end: destLocation.latitude);
     final lngTween = Tween<double>(
-        begin: mapController.center.longitude, end: destLocation.longitude);
-    final zoomTween =
-        Tween<double>(begin: mapController.zoom, end: mapController.zoom + 1);
+        begin: mapController.camera.center.longitude,
+        end: destLocation.longitude);
+    final zoomTween = Tween<double>(
+        begin: mapController.camera.zoom, end: mapController.camera.zoom + 1);
     var controller = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
     Animation<double> animation =
@@ -225,10 +226,9 @@ class NewEditStepState extends State<NewEditStep>
         TextEditingController(text: emptyIfZero(widget.step.latitude));
     _longitudeController ??=
         TextEditingController(text: emptyIfZero(widget.step.longitude));
-    return WillPopScope(
-      onWillPop: () async {
-        await _deleteTemporarymedia();
-        return true;
+    return PopScope(
+      onPopInvoked: (_) {
+        _deleteTemporarymedia();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -381,18 +381,20 @@ class NewEditStepState extends State<NewEditStep>
                           child: FlutterMap(
                               mapController: mapController,
                               options: MapOptions(
-                                  onTap: (tapPosition, point) {
-                                    _updateMap(
-                                        point.latitude, point.longitude, true);
-                                  },
-                                  center: LatLng(widget.step.latitude,
-                                      widget.step.longitude),
-                                  minZoom: 0,
-                                  maxZoom: 18,
-                                  zoom: 18,
-                                  enableScrollWheel: true,
-                                  interactiveFlags: InteractiveFlag.all &
-                                      ~InteractiveFlag.rotate),
+                                onTap: (tapPosition, point) {
+                                  _updateMap(
+                                      point.latitude, point.longitude, true);
+                                },
+                                initialCenter: LatLng(widget.step.latitude,
+                                    widget.step.longitude),
+                                minZoom: 0,
+                                maxZoom: 18,
+                                initialZoom: 18,
+                                interactionOptions: const InteractionOptions(
+                                    enableScrollWheel: true,
+                                    flags: InteractiveFlag.all &
+                                        ~InteractiveFlag.rotate),
+                              ),
                               children: <Widget>[
                                 TileLayer(
                                   urlTemplate:
@@ -406,7 +408,7 @@ class NewEditStepState extends State<NewEditStep>
                                       height: 80.0,
                                       point: LatLng(widget.step.latitude,
                                           widget.step.longitude),
-                                      builder: (ctx) => const Icon(
+                                      child: const Icon(
                                         Icons.location_on,
                                         color: Colors.blueAccent,
                                         size: 40,

@@ -122,8 +122,7 @@ const List<double> _playbackRates = <double>[
 ];
 
 class _ControlsOverlay extends StatelessWidget {
-  const _ControlsOverlay({Key? key, required this.controller})
-      : super(key: key);
+  const _ControlsOverlay({required this.controller});
 
   final VideoPlayerController controller;
 
@@ -213,8 +212,7 @@ class PlaybackSpeedIndicator extends StatelessWidget {
 }
 
 class _AudioControlsOverlay extends StatefulWidget {
-  const _AudioControlsOverlay({Key? key, required this.audioPlayer})
-      : super(key: key);
+  const _AudioControlsOverlay({required this.audioPlayer});
 
   final AudioPlayer audioPlayer;
 

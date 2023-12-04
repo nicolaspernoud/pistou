@@ -31,12 +31,12 @@ dependencies:
     path: aosp_location
   cupertino_icons: ^1.0.5
   equatable: ^2.0.5
-  file_picker: ^5.2.2
+  file_picker: ^6.1.1
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_map: ^5.0.0
+  flutter_map: ^6.1.0
   http: ^1.0.0
   image: ^4.0.15
   image_picker: ^1.0.4
@@ -57,7 +57,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.1
+  flutter_lints: ^3.0.1
   flutter_test:
     sdk: flutter
 

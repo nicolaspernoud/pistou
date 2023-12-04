@@ -12,8 +12,7 @@ import 'new_user.dart';
 class Settings extends StatefulWidget {
   final Crud usersCrud;
   final Crud stepsCrud;
-  const Settings({Key? key, required this.usersCrud, required this.stepsCrud})
-      : super(key: key);
+  const Settings({super.key, required this.usersCrud, required this.stepsCrud});
 
   @override
   SettingsState createState() => SettingsState();
@@ -109,7 +108,7 @@ class SettingsState extends State<Settings> {
                                       ],
                                     ),
                                   )))
-                              .toList(),
+                              ,
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: IconButton(
@@ -169,7 +168,7 @@ class SettingsState extends State<Settings> {
                                       ],
                                     ),
                                   )))
-                              .toList(),
+                              ,
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: IconButton(
@@ -269,8 +268,7 @@ class SettingsField extends StatelessWidget {
   final VoidCallback? onChange;
 
   const SettingsField(
-      {Key? key, required this.onboarding, this.formKey, this.onChange})
-      : super(key: key);
+      {super.key, required this.onboarding, this.formKey, this.onChange});
 
   @override
   Widget build(BuildContext context) {

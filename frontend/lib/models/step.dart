@@ -13,7 +13,7 @@ class Step extends Serialisable with EquatableMixin {
   bool isEnd;
 
   Step(
-      {required id,
+      {required super.id,
       required this.rank,
       required this.latitude,
       required this.longitude,
@@ -21,8 +21,7 @@ class Step extends Serialisable with EquatableMixin {
       required this.question,
       this.shakeMessage,
       required this.answer,
-      required this.isEnd})
-      : super(id: id);
+      required this.isEnd});
 
   @override
   Map<String, dynamic> toJson() {
