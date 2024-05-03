@@ -194,11 +194,7 @@ class NewEditStepState extends State<NewEditStep>
   }
 
   Future<void> _mediaToServer(int id, String? ext) async {
-    await http.delete(
-        Uri.parse('${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
-        headers: <String, String>{
-          'Authorization': "Bearer ${App().prefs.token}"
-        });
+    await _deleteMediaAtServer(id);
     if (mediaBytes != null) {
       final response = await http.post(
           Uri.parse(
@@ -211,6 +207,14 @@ class NewEditStepState extends State<NewEditStep>
         throw Exception(response.body.toString());
       }
     }
+  }
+
+  Future<void> _deleteMediaAtServer(int id) async {
+    await http.delete(
+        Uri.parse('${App().prefs.hostname}/api/steps/medias/${id.toString()}'),
+        headers: <String, String>{
+          'Authorization': "Bearer ${App().prefs.token}"
+        });
   }
 
   @override
@@ -242,7 +246,7 @@ class NewEditStepState extends State<NewEditStep>
                       onPressed: () async {
                         await widget.crud.delete(widget.step.id);
                         await _deleteTemporarymedia();
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(tr(context, "step_deleted"))));
@@ -398,8 +402,7 @@ class NewEditStepState extends State<NewEditStep>
                               children: <Widget>[
                                 TileLayer(
                                   urlTemplate:
-                                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  subdomains: const ['a', 'b', 'c'],
+                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 ),
                                 MarkerLayer(
                                   markers: [
@@ -580,6 +583,12 @@ class NewEditStepState extends State<NewEditStep>
                                               if (widget.step.id > 0) {
                                                 await widget.crud
                                                     .update(widget.step);
+                                                await _imgToServer(
+                                                    widget.step.id);
+                                                if (mediaBytes == null) {
+                                                  await _deleteMediaAtServer(
+                                                      widget.step.id);
+                                                }
                                               } else {
                                                 var t = await widget.crud
                                                     .create(widget.step);
@@ -592,7 +601,7 @@ class NewEditStepState extends State<NewEditStep>
                                             } catch (e) {
                                               msg = e.toString();
                                             }
-                                            if (!mounted) return;
+                                            if (!context.mounted) return;
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               SnackBar(content: Text(msg)),

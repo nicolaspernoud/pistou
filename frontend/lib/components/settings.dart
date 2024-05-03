@@ -47,7 +47,7 @@ class SettingsState extends State<Settings> {
               onPressed: () async {
                 await widget.usersCrud.read();
                 setState(() {});
-                if (!mounted) return;
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(tr(context, "users_refreshed"))));
               })
@@ -89,26 +89,24 @@ class SettingsState extends State<Settings> {
                     if (snapshot.hasData) {
                       return Column(
                         children: [
-                          ...snapshot.data!
-                              .map((a) => Card(
-                                      child: InkWell(
-                                    splashColor: Colors.blue.withAlpha(30),
-                                    onTap: () {
-                                      _editUser(a);
-                                    },
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        ListTile(
-                                          leading: const Icon(Icons.person),
-                                          title: Text(a.name),
-                                          subtitle: Text(
-                                              "${tr(context, "current_step")} : ${a.currentStep}"),
-                                        ),
-                                      ],
+                          ...snapshot.data!.map((a) => Card(
+                                  child: InkWell(
+                                splashColor: Colors.blue.withAlpha(30),
+                                onTap: () {
+                                  _editUser(a);
+                                },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    ListTile(
+                                      leading: const Icon(Icons.person),
+                                      title: Text(a.name),
+                                      subtitle: Text(
+                                          "${tr(context, "current_step")} : ${a.currentStep}"),
                                     ),
-                                  )))
-                              ,
+                                  ],
+                                ),
+                              ))),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: IconButton(
@@ -148,27 +146,25 @@ class SettingsState extends State<Settings> {
                       snapshot.data!.sort((a, b) => a.rank.compareTo(b.rank));
                       return Column(
                         children: [
-                          ...snapshot.data!
-                              .map((a) => Card(
-                                      child: InkWell(
-                                    splashColor: Colors.blue.withAlpha(30),
-                                    onTap: () {
-                                      _editStep(a);
-                                    },
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        ListTile(
-                                          leading: const Icon(
-                                              Icons.not_listed_location),
-                                          title: Text(
-                                              "${a.rank} - ${a.locationHint}"),
-                                          subtitle: Text(a.question),
-                                        ),
-                                      ],
+                          ...snapshot.data!.map((a) => Card(
+                                  child: InkWell(
+                                splashColor: Colors.blue.withAlpha(30),
+                                onTap: () {
+                                  _editStep(a);
+                                },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    ListTile(
+                                      leading:
+                                          const Icon(Icons.not_listed_location),
+                                      title:
+                                          Text("${a.rank} - ${a.locationHint}"),
+                                      subtitle: Text(a.question),
                                     ),
-                                  )))
-                              ,
+                                  ],
+                                ),
+                              ))),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: IconButton(

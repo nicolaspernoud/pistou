@@ -128,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     currentStep: 1,
                     id: 0));
                 App().prefs.userId = user.id;
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.pop(context, 'OK');
               }
             },
