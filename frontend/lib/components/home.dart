@@ -137,14 +137,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-    hasUserOrOpenSettings(_);
+    hasUserOrOpenSettings(0);
   }
 
   void hasUserOrOpenSettings(_) {
     if (App().hasUser) {
       _getCurrentStep(false);
     } else {
-      openSettings(_);
+      openSettings(0);
     }
   }
 

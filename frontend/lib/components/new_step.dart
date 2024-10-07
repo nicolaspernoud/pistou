@@ -231,7 +231,7 @@ class NewEditStepState extends State<NewEditStep>
     _longitudeController ??=
         TextEditingController(text: emptyIfZero(widget.step.longitude));
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         _deleteTemporarymedia();
       },
       child: Scaffold(
@@ -395,7 +395,6 @@ class NewEditStepState extends State<NewEditStep>
                                 maxZoom: 18,
                                 initialZoom: 18,
                                 interactionOptions: const InteractionOptions(
-                                    enableScrollWheel: true,
                                     flags: InteractiveFlag.all &
                                         ~InteractiveFlag.rotate),
                               ),
