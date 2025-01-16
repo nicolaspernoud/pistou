@@ -1,8 +1,6 @@
-import 'package:equatable/equatable.dart';
-
 import 'crud.dart';
 
-class Position extends Serialisable with EquatableMixin {
+class Position extends Serialisable {
   double latitude;
   double longitude;
   String source;
@@ -42,10 +40,27 @@ class Position extends Serialisable with EquatableMixin {
   }
 
   @override
-  List<Object> get props {
-    return [id, latitude, longitude, source, batteryLevel, time];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is Position) {
+      // Define the subset of properties to compare
+      final subset = [
+        () => id == other.id,
+        () => latitude == other.latitude,
+        () => longitude == other.longitude,
+        () => source == other.source,
+        () => batteryLevel == other.batteryLevel,
+        () => time == other.time
+      ];
+      // Compare each property in the subset
+      return subset.every((comparison) => comparison());
+    }
+    return false;
   }
 
   @override
-  bool get stringify => true;
+  int get hashCode {
+    // Use only the subset of properties for the hash code
+    return Object.hash(id, latitude, longitude, source, batteryLevel, time);
+  }
 }

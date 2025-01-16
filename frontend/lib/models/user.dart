@@ -1,7 +1,6 @@
 import 'package:pistou/models/crud.dart';
-import 'package:equatable/equatable.dart';
 
-class User extends Serialisable with EquatableMixin {
+class User extends Serialisable {
   String name;
   String password;
   int? currentStep;
@@ -32,10 +31,24 @@ class User extends Serialisable with EquatableMixin {
   }
 
   @override
-  List<Object> get props {
-    return [id, name];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is User) {
+      // Define the subset of properties to compare
+      final subset = [
+        () => id == other.id,
+        () => name == other.name,
+        () => currentStep == other.currentStep,
+      ];
+      // Compare each property in the subset
+      return subset.every((comparison) => comparison());
+    }
+    return false;
   }
 
   @override
-  bool get stringify => true;
+  int get hashCode {
+    // Use only the subset of properties for the hash code
+    return Object.hash(id, name, currentStep);
+  }
 }
