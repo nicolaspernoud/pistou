@@ -29,37 +29,37 @@ environment:
 dependencies:
   aosp_location:
     path: aosp_location
-  cupertino_icons: ^1.0.8
-  file_picker: ^8.1.7
+  cupertino_icons: 1.0.8
+  file_picker: 10.2.0
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_map: ^7.0.2
-  http: ^1.2.2
-  image: ^4.5.2
-  image_picker: ^1.1.2
-  just_audio: ^0.9.43
-  latlong2: ^0.9.1
-  path_provider: ^2.1.5
-  permission_handler: ^11.3.1
+  flutter_map: 8.1.1
+  http: 1.4.0
+  image: 4.5.4
+  image_picker: 1.1.2
+  just_audio: 0.10.4
+  latlong2: 0.9.1
+  path_provider: 2.1.5
+  permission_handler: ^12.0.0+1
   shake:
     git:
       url: https://github.com/dieringe/shake.git
       ref: dieringe
-  shared_preferences: ^2.3.5
-  url_launcher: ^6.3.1
-  video_player: ^2.9.2
+  shared_preferences: 2.5.3
+  url_launcher: 6.3.1
+  video_player: 2.10.0
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.14.2
+  flutter_launcher_icons: 0.14.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: 6.0.0
   flutter_test:
     sdk: flutter
 

@@ -116,7 +116,7 @@ class NewEditStepState extends State<NewEditStep>
     controller.forward();
   }
 
-  _imgFrom(ImageSource source) async {
+  Future<void> _imgFrom(ImageSource source) async {
     final temp = await ImagePicker().pickImage(
         source: source, imageQuality: JPG_IMAGE_QUALITY, maxWidth: 1280);
     if (temp != null) {
@@ -161,7 +161,7 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  _imgFromServer(int id) async {
+  Future<void> _imgFromServer(int id) async {
     final response = await http.get(
       Uri.parse('${App().prefs.hostname}/api/steps/images/${id.toString()}'),
       headers: <String, String>{'Authorization': "Bearer ${App().prefs.token}"},
@@ -173,7 +173,7 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  _mediaFrom() async {
+  Future<void> _mediaFrom() async {
     var tmpStatus = _mediaStatus;
     setState(() {
       _mediaStatus = MediaStatus.loading;
@@ -639,8 +639,8 @@ class NewEditStepState extends State<NewEditStep>
     }
   }
 
-  _deleteTemporarymedia() {
-    http.delete(
+   Future<void> _deleteTemporarymedia() async {
+    await http.delete(
         Uri.parse(
             '${App().prefs.hostname}/api/steps/medias/${_randomId.toString()}'),
         headers: <String, String>{

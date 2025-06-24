@@ -31,8 +31,8 @@ class SettingsState extends State<Settings> {
     refreshLog();
   }
 
-  refreshLog() async {
-    var lc = await App().getLog().join("\n");
+  void refreshLog() {
+    var lc = App().getLog().join("\n");
     setState(() {
       _logContent = lc;
     });

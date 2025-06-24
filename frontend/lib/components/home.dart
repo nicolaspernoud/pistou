@@ -107,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> openSettings(_) async {
+  Future<void> openSettings(Duration _) async {
     final formKey = GlobalKey<FormState>();
     await showDialog<String>(
       context: context,
@@ -137,14 +137,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-    hasUserOrOpenSettings(0);
+    hasUserOrOpenSettings();
   }
 
-  void hasUserOrOpenSettings(_) {
+  void hasUserOrOpenSettings() {
     if (App().hasUser) {
       _getCurrentStep(false);
     } else {
-      openSettings(0);
+      openSettings(Duration(seconds: 0));
     }
   }
 
@@ -177,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         usersCrud: APICrud<User>(), stepsCrud: APICrud<Step>());
                   }));
                   setState(() {
-                    hasUserOrOpenSettings(null);
+                    hasUserOrOpenSettings();
                   });
                 })
           ],
