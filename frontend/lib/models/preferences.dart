@@ -107,7 +107,7 @@ class Preferences with LocalFilePersister {
   }
 }
 
-abstract class LocalFilePersister {
+mixin LocalFilePersister {
   void fromJson(String source);
   String toJson();
 

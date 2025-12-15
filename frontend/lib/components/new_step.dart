@@ -231,7 +231,7 @@ class NewEditStepState extends State<NewEditStep>
     _longitudeController ??=
         TextEditingController(text: emptyIfZero(widget.step.longitude));
     return PopScope(
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         _deleteTemporarymedia();
       },
       child: Scaffold(

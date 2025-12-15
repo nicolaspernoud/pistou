@@ -7,8 +7,7 @@ use crate::{
 };
 
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
-    Argon2, PasswordHash, PasswordVerifier,
+    Argon2, PasswordHash, password_hash::{ PasswordHasher, PasswordVerifier}
 };
 
 macro_rules! trim {
@@ -21,10 +20,9 @@ macro_rules! trim {
                 ));
             }
 
-            let salt = SaltString::generate(&mut OsRng);
             let argon2 = Argon2::default();
             // Hash password to PHC string ($argon2id$v=19$...)
-            match argon2.hash_password(self.password.trim().as_bytes(), &salt) {
+            match argon2.hash_password(self.password.trim().as_bytes()) {
                 Ok(password) => {
                     self.password = password.to_string();
                     Ok(self)
