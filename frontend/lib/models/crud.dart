@@ -1,4 +1,4 @@
-// ignore_for_file: strict_top_level_inference
+// ignore_for_file: type_literal_in_constant_pattern, strict_top_level_inference
 
 import 'dart:convert';
 import 'dart:io';
@@ -36,9 +36,7 @@ String routeByType(Type t) {
 }
 
 abstract class Serialisable {
-  Serialisable({
-    required this.id,
-  });
+  Serialisable({required this.id});
 
   void fromJson(Map<String, dynamic> json) {}
   int id = 0;
@@ -80,7 +78,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         Uri.parse('$base/$route'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': "Bearer $token"
+          'Authorization': "Bearer $token",
         },
         body: jsonEncode(val),
       );
@@ -99,7 +97,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         Uri.parse('$base/$route/${id.toString()}'),
         headers: <String, String>{
           'Authorization': "Bearer $token",
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       );
       if (response.statusCode == 200) {
@@ -143,7 +141,7 @@ class APICrud<T extends Serialisable> extends Crud<T> {
         Uri.parse('$base/$route/${val.id}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': "Bearer $token"
+          'Authorization': "Bearer $token",
         },
         body: jsonEncode(val),
       );
